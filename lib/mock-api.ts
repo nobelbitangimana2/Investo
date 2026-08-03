@@ -1,6 +1,9 @@
 /**
- * Mock API layer — swap each function body for a real fetch/axios call
- * when the backend is ready. All signatures stay identical.
+ * API layer — all functions call the real NestJS backend.
+ * Signatures are identical to the old mock layer so no page/component changes needed.
+ *
+ * Backend base URL is set via NEXT_PUBLIC_API_URL in .env.local
+ * (defaults to http://localhost:3001/api in development).
  */
 
 import type {
@@ -18,41 +21,159 @@ import type {
 } from "@/types";
 
 import {
-  mockUsers,
-  mockClientProfiles,
-  mockDeposits,
-  mockWithdrawals,
-  mockInvestments,
-  mockInterestRates,
-  mockNotifications,
-  mockAuditLogs,
-  mockAccountantPermissions,
-} from "./mock-data";
+  apiGet,
+  apiPost,
+  apiPatch,
+  apiPostForm,
+  apiPatchForm,
+  setTokens,
+  clearTokens,
+} from "./api-client";
 
-// In-memory mutable stores (simulate a database)
-let _users = [...mockUsers];
-let _profiles = [...mockClientProfiles];
-let _deposits = [...mockDeposits];
-let _withdrawals = [...mockWithdrawals];
-let _investments = [...mockInvestments];
-let _rates = [...mockInterestRates];
-let _notifications = [...mockNotifications];
-let _auditLogs = [...mockAuditLogs];
-let _permissions = [...mockAccountantPermissions];
+// ── Helpers to map backend enum values → frontend string literals ─────────
+// The backend uses uppercase enums (CONFIRMED, BCB, ONE_YEAR…)
+// The frontend types use lowercase/friendly strings (confirmed, BCB, 1 Year…)
 
-const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
+function normalizeUser(u: Record<string, unknown>): User {
+  return {
+    ...(u as User),
+    role: (u.role as string).toLowerCase() as User["role"],
+    status: (u.status as string).toLowerCase() as User["status"],
+  };
+}
 
-function genId(prefix: string) {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+function normalizeDeposit(d: Record<string, unknown>): Deposit {
+  return {
+    ...(d as Deposit),
+    status: (d.status as string).toLowerCase() as Deposit["status"],
+    bank: normBank(d.bank as string),
+    investmentPeriod: normPeriod(d.investmentPeriod as string),
+    submittedAt: (d.submittedAt ?? d.createdAt) as string,
+    verifiedBy: (d.verifiedById as string | undefined) ?? undefined,
+    verifiedAt: (d.verifiedAt as string | undefined) ?? undefined,
+  };
+}
+
+function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
+  return {
+    ...(w as Withdrawal),
+    status: (w.status as string).toLowerCase() as Withdrawal["status"],
+    bankToTransferTo: normBank(w.bankToTransferTo as string),
+  };
+}
+
+function normalizeInvestment(i: Record<string, unknown>): Investment {
+  return {
+    ...(i as Investment),
+    status: (i.status as string).toLowerCase() as Investment["status"],
+    investmentPeriod: normPeriod(i.investmentPeriod as string),
+    amount: Number(i.originalPrincipal ?? i.amount),
+    currentPrincipal: Number(i.currentPrincipal),
+    accruedInterest: Number(i.accruedInterest),
+    interestRate: Number(i.interestRate) * 100, // backend stores 0.35, frontend shows 35
+    expectedInterest:
+      Number(i.originalPrincipal ?? i.amount) * Number(i.interestRate),
+    expectedMaturityValue:
+      Number(i.originalPrincipal ?? i.amount) * (1 + Number(i.interestRate)),
+    confirmationDate: (i.confirmationDate as string) ?? "",
+    maturityDate: (i.maturityDate as string) ?? "",
+    depositId: (i.depositId as string) ?? "",
+    clientId: (i.clientId as string) ?? "",
+  };
+}
+
+function normalizeNotification(n: Record<string, unknown>): Notification {
+  return {
+    ...(n as Notification),
+    date: (n.createdAt ?? n.date) as string,
+  };
+}
+
+// Bank enum: backend = BANCOBU | BCB | KCB | ECOBANK
+// frontend  = Bancobu | BCB | KCB | Ecobank
+function normBank(b: string): Deposit["bank"] {
+  const map: Record<string, Deposit["bank"]> = {
+    BANCOBU: "Bancobu",
+    BCB: "BCB",
+    KCB: "KCB",
+    ECOBANK: "Ecobank",
+  };
+  return map[b] ?? (b as Deposit["bank"]);
+}
+
+// InvestmentPeriod enum mapping
+function normPeriod(p: string): Deposit["investmentPeriod"] {
+  const map: Record<string, Deposit["investmentPeriod"]> = {
+    WEEKLY: "Weekly",
+    MONTHLY: "Monthly",
+    THREE_MONTHS: "3 Months",
+    SIX_MONTHS: "6 Months",
+    ONE_YEAR: "1 Year",
+    FIVE_YEARS: "5 Years",
+  };
+  return map[p] ?? (p as Deposit["investmentPeriod"]);
+}
+
+// Bank name → backend enum
+function bankToEnum(b: string): string {
+  const map: Record<string, string> = {
+    Bancobu: "BANCOBU",
+    BCB: "BCB",
+    KCB: "KCB",
+    Ecobank: "ECOBANK",
+  };
+  return map[b] ?? b;
+}
+
+// Period → backend enum
+function periodToEnum(p: string): string {
+  const map: Record<string, string> = {
+    Weekly: "WEEKLY",
+    Monthly: "MONTHLY",
+    "3 Months": "THREE_MONTHS",
+    "6 Months": "SIX_MONTHS",
+    "1 Year": "ONE_YEAR",
+    "5 Years": "FIVE_YEARS",
+  };
+  return map[p] ?? p;
+}
+
+// Unwrap paginated response { data: [...], meta: {...} }
+function unwrapPage<T>(res: unknown): T[] {
+  if (res && typeof res === "object" && "data" in res) {
+    return (res as { data: T[] }).data;
+  }
+  return res as T[];
 }
 
 // ─────────────────────────────────────────────
 // Auth
 // ─────────────────────────────────────────────
 
-export async function mockLogin(email: string, _password: string): Promise<User | null> {
-  await delay();
-  return _users.find((u) => u.email === email && u.status === "active") ?? null;
+export async function mockLogin(
+  email: string,
+  password: string,
+): Promise<User | null> {
+  try {
+    const res = await apiPost<{
+      user: Record<string, unknown>;
+      accessToken: string;
+      refreshToken: string;
+    }>("/auth/login", { email, password });
+
+    setTokens(res.accessToken, res.refreshToken);
+    return normalizeUser(res.user);
+  } catch {
+    return null;
+  }
+}
+
+export async function logoutApi(refreshToken: string): Promise<void> {
+  try {
+    await apiPost("/auth/logout", { refreshToken });
+  } finally {
+    clearTokens();
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -60,23 +181,27 @@ export async function mockLogin(email: string, _password: string): Promise<User 
 // ─────────────────────────────────────────────
 
 export async function getUsers(): Promise<User[]> {
-  await delay();
-  return [..._users];
+  const res = await apiGet<unknown>("/users");
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeUser);
 }
 
 export async function getUserById(id: string): Promise<User | null> {
-  await delay();
-  return _users.find((u) => u.id === id) ?? null;
+  try {
+    const res = await apiGet<Record<string, unknown>>(`/users/${id}`);
+    return normalizeUser(res);
+  } catch {
+    return null;
+  }
 }
 
 export async function getClients(): Promise<User[]> {
-  await delay();
-  return _users.filter((u) => u.role === "client");
+  const res = await apiGet<unknown>("/clients?limit=100");
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeUser);
 }
 
 export async function getAccountants(): Promise<User[]> {
-  await delay();
-  return _users.filter((u) => u.role === "accountant");
+  const res = await apiGet<unknown>("/users/accountants");
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeUser);
 }
 
 export async function createAccountant(data: {
@@ -84,52 +209,44 @@ export async function createAccountant(data: {
   email: string;
   password: string;
 }): Promise<User> {
-  await delay();
-  const user: User = {
-    id: genId("u-acc"),
-    name: data.name,
-    email: data.email,
-    role: "accountant",
-    status: "active",
-    createdAt: new Date().toISOString().split("T")[0],
-  };
-  _users = [..._users, user];
-  const perms: AccountantPermissions = {
-    userId: user.id,
-    viewDeposits: false,
-    viewWithdraws: false,
-    confirmDeposits: false,
-    rejectDeposits: false,
-    confirmWithdraws: false,
-    rejectWithdraws: false,
-    generateReports: false,
-  };
-  _permissions = [..._permissions, perms];
-  return user;
+  const res = await apiPost<Record<string, unknown>>("/users/accountants", data);
+  return normalizeUser(res);
 }
 
-export async function updateUserStatus(id: string, status: "active" | "suspended"): Promise<User> {
-  await delay();
-  _users = _users.map((u) => (u.id === id ? { ...u, status } : u));
-  return _users.find((u) => u.id === id)!;
+export async function updateUserStatus(
+  id: string,
+  status: "active" | "suspended",
+): Promise<User> {
+  const endpoint =
+    status === "suspended"
+      ? `/users/${id}/status/suspend`
+      : `/users/${id}/status/activate`;
+  const res = await apiPatch<Record<string, unknown>>(endpoint);
+  return normalizeUser(res);
 }
 
 // ─────────────────────────────────────────────
 // Client Profiles
 // ─────────────────────────────────────────────
 
-export async function getClientProfile(userId: string): Promise<ClientProfile | null> {
-  await delay();
-  return _profiles.find((p) => p.userId === userId) ?? null;
+export async function getClientProfile(
+  userId: string,
+): Promise<ClientProfile | null> {
+  try {
+    const res = await apiGet<Record<string, unknown>>(`/clients/me`);
+    const profile = res.clientProfile as ClientProfile | undefined;
+    return profile ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function updateClientProfile(
-  userId: string,
-  data: Partial<ClientProfile>
+  _userId: string,
+  data: Partial<ClientProfile>,
 ): Promise<ClientProfile> {
-  await delay();
-  _profiles = _profiles.map((p) => (p.userId === userId ? { ...p, ...data } : p));
-  return _profiles.find((p) => p.userId === userId)!;
+  const res = await apiPatch<{ profile: ClientProfile }>("/clients/me", data);
+  return res.profile;
 }
 
 // ─────────────────────────────────────────────
@@ -137,87 +254,56 @@ export async function updateClientProfile(
 // ─────────────────────────────────────────────
 
 export async function getDeposits(clientId?: string): Promise<Deposit[]> {
-  await delay();
-  return clientId ? _deposits.filter((d) => d.clientId === clientId) : [..._deposits];
+  const endpoint = clientId ? "/deposits/me" : "/deposits?limit=100";
+  const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeDeposit);
 }
 
 export async function getDepositById(id: string): Promise<Deposit | null> {
-  await delay();
-  return _deposits.find((d) => d.id === id) ?? null;
+  try {
+    const res = await apiGet<Record<string, unknown>>(`/deposits/${id}`);
+    return normalizeDeposit(res);
+  } catch {
+    return null;
+  }
 }
 
 export async function submitDeposit(
-  clientId: string,
-  data: DepositFormData
+  _clientId: string,
+  data: DepositFormData,
 ): Promise<Deposit> {
-  await delay(600);
-  const deposit: Deposit = {
-    id: genId("dep"),
-    clientId,
-    fullName: data.fullName,
-    bank: data.bank,
-    accountNumber: data.accountNumber,
-    amount: data.amount,
-    depositDate: data.depositDate,
-    referenceNumber: data.referenceNumber,
-    investmentPeriod: data.investmentPeriod,
-    receiptUrl: data.receipt ? URL.createObjectURL(data.receipt) : undefined,
-    status: "pending",
-    submittedAt: new Date().toISOString(),
-  };
-  _deposits = [..._deposits, deposit];
-
-  // Notify all admins and accountants about the new pending deposit
-  const staffUsers = _users.filter((u) => u.role === "admin" || u.role === "accountant");
-  const now = new Date().toISOString();
-  const amountFormatted = data.amount.toLocaleString("fr-BI");
-  staffUsers.forEach((staff) => {
-    const notification: Notification = {
-      id: genId("notif"),
-      userId: staff.id,
-      title: "New Deposit Submitted",
-      message: `${data.fullName} submitted a deposit of ${amountFormatted} BIF (${data.investmentPeriod}) — pending review.`,
-      date: now,
-      read: false,
-      type: "deposit",
-    };
-    _notifications = [..._notifications, notification];
-  });
-
-  return deposit;
+  const formData = new FormData();
+  formData.append("fullName", data.fullName);
+  formData.append("bank", bankToEnum(data.bank));
+  formData.append("accountNumber", data.accountNumber);
+  formData.append("amount", String(data.amount));
+  formData.append("depositDate", data.depositDate);
+  formData.append("investmentPeriod", periodToEnum(data.investmentPeriod));
+  formData.append("referenceNumber", data.referenceNumber);
+  if (data.receipt) {
+    formData.append("receipt", data.receipt);
+  }
+  const res = await apiPostForm<Record<string, unknown>>("/deposits", formData);
+  return normalizeDeposit(res);
 }
 
 export async function confirmDeposit(
   id: string,
-  verifiedBy: string
+  _verifiedBy: string,
 ): Promise<Deposit> {
-  await delay();
-  _deposits = _deposits.map((d) =>
-    d.id === id
-      ? { ...d, status: "confirmed", verifiedBy, verifiedAt: new Date().toISOString() }
-      : d
-  );
-  return _deposits.find((d) => d.id === id)!;
+  const res = await apiPatch<Record<string, unknown>>(`/deposits/${id}/confirm`);
+  return normalizeDeposit(res);
 }
 
 export async function rejectDeposit(
   id: string,
-  verifiedBy: string,
-  rejectionNote: string
+  _verifiedBy: string,
+  rejectionNote: string,
 ): Promise<Deposit> {
-  await delay();
-  _deposits = _deposits.map((d) =>
-    d.id === id
-      ? {
-          ...d,
-          status: "rejected",
-          rejectionNote,
-          verifiedBy,
-          verifiedAt: new Date().toISOString(),
-        }
-      : d
-  );
-  return _deposits.find((d) => d.id === id)!;
+  const res = await apiPatch<Record<string, unknown>>(`/deposits/${id}/reject`, {
+    rejectionNote,
+  });
+  return normalizeDeposit(res);
 }
 
 // ─────────────────────────────────────────────
@@ -225,77 +311,50 @@ export async function rejectDeposit(
 // ─────────────────────────────────────────────
 
 export async function getWithdrawals(clientId?: string): Promise<Withdrawal[]> {
-  await delay();
-  return clientId ? _withdrawals.filter((w) => w.clientId === clientId) : [..._withdrawals];
+  const endpoint = clientId ? "/withdrawals/me" : "/withdrawals?limit=100";
+  const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeWithdrawal);
 }
 
 export async function getWithdrawalById(id: string): Promise<Withdrawal | null> {
-  await delay();
-  return _withdrawals.find((w) => w.id === id) ?? null;
+  try {
+    const res = await apiGet<Record<string, unknown>>(`/withdrawals/${id}`);
+    return normalizeWithdrawal(res);
+  } catch {
+    return null;
+  }
 }
 
 export async function submitWithdrawal(
-  clientId: string,
-  data: WithdrawalFormData
+  _clientId: string,
+  data: WithdrawalFormData,
 ): Promise<Withdrawal> {
-  await delay(600);
-  const withdrawal: Withdrawal = {
-    id: genId("wdr"),
-    clientId,
+  const res = await apiPost<Record<string, unknown>>("/withdrawals", {
     fullName: data.fullName,
-    bankToTransferTo: data.bankToTransferTo,
+    bankToTransferTo: bankToEnum(data.bankToTransferTo),
     accountNumber: data.accountNumber,
     recipientName: data.recipientName,
     amount: data.amount,
-    status: "pending",
-    requestedAt: new Date().toISOString(),
-  };
-  _withdrawals = [..._withdrawals, withdrawal];
-
-  // Notify all admins and accountants about the new pending withdrawal
-  const staffUsers = _users.filter((u) => u.role === "admin" || u.role === "accountant");
-  const now = new Date().toISOString();
-  const amountFormatted = data.amount.toLocaleString("fr-BI");
-  staffUsers.forEach((staff) => {
-    const notification: Notification = {
-      id: genId("notif"),
-      userId: staff.id,
-      title: "Withdrawal Request",
-      message: `${data.fullName} requested a withdrawal of ${amountFormatted} BIF to ${data.bankToTransferTo} — awaiting confirmation.`,
-      date: now,
-      read: false,
-      type: "withdrawal",
-    };
-    _notifications = [..._notifications, notification];
   });
-
-  return withdrawal;
+  return normalizeWithdrawal(res);
 }
 
 export async function confirmWithdrawal(id: string): Promise<Withdrawal> {
-  await delay();
-  _withdrawals = _withdrawals.map((w) =>
-    w.id === id ? { ...w, status: "confirmed", confirmedAt: new Date().toISOString() } : w
+  const res = await apiPatch<Record<string, unknown>>(
+    `/withdrawals/${id}/confirm`,
   );
-  return _withdrawals.find((w) => w.id === id)!;
+  return normalizeWithdrawal(res);
 }
 
 export async function rejectWithdrawal(
   id: string,
-  rejectionNote: string
+  rejectionNote: string,
 ): Promise<Withdrawal> {
-  await delay();
-  _withdrawals = _withdrawals.map((w) =>
-    w.id === id
-      ? {
-          ...w,
-          status: "rejected",
-          rejectionNote,
-          confirmedAt: new Date().toISOString(),
-        }
-      : w
+  const res = await apiPatch<Record<string, unknown>>(
+    `/withdrawals/${id}/reject`,
+    { rejectionNote },
   );
-  return _withdrawals.find((w) => w.id === id)!;
+  return normalizeWithdrawal(res);
 }
 
 // ─────────────────────────────────────────────
@@ -303,8 +362,9 @@ export async function rejectWithdrawal(
 // ─────────────────────────────────────────────
 
 export async function getInvestments(clientId?: string): Promise<Investment[]> {
-  await delay();
-  return clientId ? _investments.filter((i) => i.clientId === clientId) : [..._investments];
+  const endpoint = clientId ? "/investments/me" : "/investments?limit=100";
+  const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeInvestment);
 }
 
 // ─────────────────────────────────────────────
@@ -312,55 +372,49 @@ export async function getInvestments(clientId?: string): Promise<Investment[]> {
 // ─────────────────────────────────────────────
 
 export async function getInterestRates(): Promise<InterestRate[]> {
-  await delay();
-  return [..._rates];
+  const res = await apiGet<unknown>("/interest-rates");
+  const rates = unwrapPage<Record<string, unknown>>(res);
+  return rates.map((r) => ({
+    id: r.id as string,
+    investmentPeriod: normPeriod(r.investmentPeriod as string),
+    ratePercentage: Number(r.ratePercentage),
+    dateUpdated: (r.updatedAt ?? r.dateUpdated) as string,
+  }));
 }
 
 export async function upsertInterestRate(
   period: string,
-  ratePercentage: number
+  ratePercentage: number,
 ): Promise<InterestRate> {
-  await delay();
-  const existing = _rates.find((r) => r.investmentPeriod === period);
-  if (existing) {
-    _rates = _rates.map((r) =>
-      r.investmentPeriod === period
-        ? { ...r, ratePercentage, dateUpdated: new Date().toISOString().split("T")[0] }
-        : r
-    );
-    return _rates.find((r) => r.investmentPeriod === period)!;
-  }
-  const newRate: InterestRate = {
-    id: genId("ir"),
-    investmentPeriod: period as InterestRate["investmentPeriod"],
+  const res = await apiPost<Record<string, unknown>>("/interest-rates", {
+    investmentPeriod: periodToEnum(period),
     ratePercentage,
-    dateUpdated: new Date().toISOString().split("T")[0],
+  });
+  return {
+    id: res.id as string,
+    investmentPeriod: normPeriod(res.investmentPeriod as string),
+    ratePercentage: Number(res.ratePercentage),
+    dateUpdated: (res.updatedAt ?? res.dateUpdated) as string,
   };
-  _rates = [..._rates, newRate];
-  return newRate;
 }
 
 // ─────────────────────────────────────────────
 // Notifications
 // ─────────────────────────────────────────────
 
-export async function getNotifications(userId: string): Promise<Notification[]> {
-  await delay();
-  return _notifications.filter((n) => n.userId === userId).sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
+export async function getNotifications(
+  _userId: string,
+): Promise<Notification[]> {
+  const res = await apiGet<unknown>("/notifications/me?limit=50");
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeNotification);
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  await delay(200);
-  _notifications = _notifications.map((n) => (n.id === id ? { ...n, read: true } : n));
+  await apiPatch(`/notifications/${id}/read`);
 }
 
-export async function markAllNotificationsRead(userId: string): Promise<void> {
-  await delay(200);
-  _notifications = _notifications.map((n) =>
-    n.userId === userId ? { ...n, read: true } : n
-  );
+export async function markAllNotificationsRead(_userId: string): Promise<void> {
+  await apiPatch("/notifications/me/read-all");
 }
 
 // ─────────────────────────────────────────────
@@ -368,32 +422,81 @@ export async function markAllNotificationsRead(userId: string): Promise<void> {
 // ─────────────────────────────────────────────
 
 export async function getAuditLogs(): Promise<AuditLogEntry[]> {
-  await delay();
-  return [..._auditLogs].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  );
+  const res = await apiGet<unknown>("/audit-logs?limit=100");
+  return unwrapPage<Record<string, unknown>>(res).map((l) => ({
+    id: l.id as string,
+    userId: l.userId as string,
+    userName: (l.user as Record<string, string> | undefined)?.name ?? "",
+    userRole: (
+      (l.user as Record<string, string> | undefined)?.role ?? "admin"
+    ).toLowerCase() as AuditLogEntry["userRole"],
+    action: l.action as string,
+    details: l.details as string,
+    timestamp: l.timestamp as string,
+    targetId: l.targetId as string | undefined,
+    targetType: l.targetType as AuditLogEntry["targetType"] | undefined,
+  }));
 }
 
-export async function addAuditLog(entry: Omit<AuditLogEntry, "id">): Promise<void> {
-  _auditLogs = [{ ...entry, id: genId("log") }, ..._auditLogs];
+export async function addAuditLog(
+  _entry: Omit<AuditLogEntry, "id">,
+): Promise<void> {
+  // Audit logs are written server-side automatically — no client call needed
 }
 
 // ─────────────────────────────────────────────
 // Accountant Permissions
 // ─────────────────────────────────────────────
 
-export async function getAccountantPermissions(userId: string): Promise<AccountantPermissions | null> {
-  await delay();
-  return _permissions.find((p) => p.userId === userId) ?? null;
+export async function getAccountantPermissions(
+  userId: string,
+): Promise<AccountantPermissions | null> {
+  try {
+    const res = await apiGet<Record<string, unknown>>(`/users/${userId}`);
+    const perms = res.accountantPermission as
+      | Record<string, unknown>
+      | undefined;
+    if (!perms) return null;
+    return {
+      userId: perms.userId as string,
+      viewDeposits: perms.viewDeposits as boolean,
+      viewWithdraws: perms.viewWithdrawals as boolean,
+      confirmDeposits: perms.confirmDeposits as boolean,
+      rejectDeposits: perms.rejectDeposits as boolean,
+      confirmWithdraws: perms.confirmWithdrawals as boolean,
+      rejectWithdraws: perms.rejectWithdrawals as boolean,
+      generateReports: perms.generateReports as boolean,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function updateAccountantPermissions(
   userId: string,
-  perms: Partial<AccountantPermissions>
+  perms: Partial<AccountantPermissions>,
 ): Promise<AccountantPermissions> {
-  await delay();
-  _permissions = _permissions.map((p) =>
-    p.userId === userId ? { ...p, ...perms } : p
+  const body = {
+    viewDeposits: perms.viewDeposits,
+    confirmDeposits: perms.confirmDeposits,
+    rejectDeposits: perms.rejectDeposits,
+    viewWithdrawals: perms.viewWithdraws,
+    confirmWithdrawals: perms.confirmWithdraws,
+    rejectWithdrawals: perms.rejectWithdraws,
+    generateReports: perms.generateReports,
+  };
+  const res = await apiPatch<Record<string, unknown>>(
+    `/users/${userId}/permissions`,
+    body,
   );
-  return _permissions.find((p) => p.userId === userId)!;
+  return {
+    userId: res.userId as string,
+    viewDeposits: res.viewDeposits as boolean,
+    viewWithdraws: res.viewWithdrawals as boolean,
+    confirmDeposits: res.confirmDeposits as boolean,
+    rejectDeposits: res.rejectDeposits as boolean,
+    confirmWithdraws: res.confirmWithdrawals as boolean,
+    rejectWithdraws: res.rejectWithdrawals as boolean,
+    generateReports: res.generateReports as boolean,
+  };
 }

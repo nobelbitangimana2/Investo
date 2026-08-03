@@ -1,0 +1,139 @@
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateAccountantDto } from './dto/create-accountant.dto';
+import { UpdatePermissionsDto } from './dto/update-permissions.dto';
+import { AuditLogsService } from '../audit-logs/audit-logs.service';
+import { Role, UserStatus } from '@prisma/client';
+
+const SALT_ROUNDS = 12;
+
+const USER_SELECT = {
+  id: true,
+  name: true,
+  email: true,
+  role: true,
+  profilePicture: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+@Injectable()
+export class UsersService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditLogs: AuditLogsService,
+  ) {}
+
+  // ── List all users (admin) ─────────────────────────────────────────
+  async findAll() {
+    return this.prisma.user.findMany({ select: USER_SELECT });
+  }
+
+  // ── Find by id ────────────────────────────────────────────────────
+  async findOne(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: { ...USER_SELECT, accountantPermission: true },
+    });
+    if (!user) throw new NotFoundException(`User ${id} not found`);
+    return user;
+  }
+
+  // ── List accountants ──────────────────────────────────────────────
+  async findAccountants() {
+    return this.prisma.user.findMany({
+      where: { role: Role.ACCOUNTANT },
+      select: { ...USER_SELECT, accountantPermission: true },
+    });
+  }
+
+  // ── Create accountant (admin only) ────────────────────────────────
+  async createAccountant(dto: CreateAccountantDto, adminId: string) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if (existing) throw new ConflictException('Email already in use');
+
+    const passwordHash = await bcrypt.hash(dto.password, SALT_ROUNDS);
+
+    const user = await this.prisma.user.create({
+      data: {
+        name: dto.name,
+        email: dto.email,
+        passwordHash,
+        role: Role.ACCOUNTANT,
+        accountantPermission: { create: {} }, // all false by default
+      },
+      select: { ...USER_SELECT, accountantPermission: true },
+    });
+
+    await this.auditLogs.log(
+      adminId,
+      'CREATE_ACCOUNTANT',
+      `Created accountant account for ${dto.name} (${dto.email})`,
+      user.id,
+      'accountant',
+    );
+
+    return user;
+  }
+
+  // ── Update status (suspend / reactivate) ──────────────────────────
+  async updateStatus(
+    id: string,
+    status: UserStatus,
+    adminId: string,
+  ) {
+    const user = await this.findOne(id);
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { status },
+      select: USER_SELECT,
+    });
+
+    await this.auditLogs.log(
+      adminId,
+      status === UserStatus.SUSPENDED ? 'SUSPEND_USER' : 'ACTIVATE_USER',
+      `${status === UserStatus.SUSPENDED ? 'Suspended' : 'Reactivated'} user ${user.name}`,
+      id,
+      'accountant',
+    );
+
+    return updated;
+  }
+
+  // ── Assign / update accountant permissions ────────────────────────
+  async updatePermissions(
+    accountantId: string,
+    dto: UpdatePermissionsDto,
+    adminId: string,
+  ) {
+    const user = await this.findOne(accountantId);
+    if (user.role !== Role.ACCOUNTANT) {
+      throw new ConflictException('Target user is not an accountant');
+    }
+
+    const perms = await this.prisma.accountantPermission.upsert({
+      where: { userId: accountantId },
+      update: dto,
+      create: { userId: accountantId, ...dto },
+    });
+
+    await this.auditLogs.log(
+      adminId,
+      'UPDATE_PERMISSIONS',
+      `Updated permissions for ${user.name}: ${JSON.stringify(dto)}`,
+      accountantId,
+      'accountant',
+    );
+
+    return perms;
+  }
+}

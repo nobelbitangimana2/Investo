@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  name                 String
+  email                String                @unique
+  passwordHash         String
+  role                 Role                  @default(CLIENT)
+  profilePicture       String?
+  status               UserStatus            @default(ACTIVE)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  accountantPermission AccountantPermission?
+  auditLogs            AuditLog[]
+  clientProfile        ClientProfile?
+  deposits             Deposit[]             @relation("ClientDeposits")
+  verifiedDeposits     Deposit[]             @relation("VerifiedDeposits")
+  investments          Investment[]
+  notifications        Notification[]
+  refreshTokens        RefreshToken[]
+  withdrawals          Withdrawal[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ClientProfile {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime?
+  nationalId        String?
+  phone             String?
+  address           String?
+  city              String?
+  province          String?
+  country           String    @default("Burundi")
+  bankName          Bank?
+  accountNumber     String?
+  accountHolderName String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AccountantPermission {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  viewDeposits       Boolean  @default(true)
+  confirmDeposits    Boolean  @default(false)
+  rejectDeposits     Boolean  @default(false)
+  viewWithdrawals    Boolean  @default(true)
+  confirmWithdrawals Boolean  @default(false)
+  rejectWithdrawals  Boolean  @default(false)
+  generateReports    Boolean  @default(false)
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Deposit {
+  id               String           @id @default(cuid())
+  clientId         String
+  fullName         String
+  bank             Bank
+  accountNumber    String
+  amount           Decimal          @db.Decimal(18, 2)
+  depositDate      DateTime
+  investmentPeriod InvestmentPeriod
+  referenceNumber  String
+  receiptUrl       String?
+  status           DepositStatus    @default(PENDING)
+  rejectionNote    String?
+  verifiedById     String?
+  verifiedAt       DateTime?
+  submittedAt      DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  client           User             @relation("ClientDeposits", fields: [clientId], references: [id])
+  verifiedBy       User?            @relation("VerifiedDeposits", fields: [verifiedById], references: [id])
+  investment       Investment?
+
+  @@index([clientId])
+  @@index([status])
+  @@index([bank])
+  @@index([investmentPeriod])
+  @@index([submittedAt])
+}
+
+model Investment {
+  id                 String           @id @default(cuid())
+  clientId           String
+  depositId          String           @unique
+  originalPrincipal  Decimal          @db.Decimal(18, 2)
+  currentPrincipal   Decimal          @db.Decimal(18, 2)
+  accruedInterest    Decimal          @default(0) @db.Decimal(18, 2)
+  interestRate       Decimal          @db.Decimal(5, 4)
+  investmentPeriod   InvestmentPeriod
+  confirmationDate   DateTime
+  maturityDate       DateTime
+  lastInterestUpdate DateTime         @default(now())
+  status             InvestmentStatus @default(ACTIVE)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  client             User             @relation(fields: [clientId], references: [id])
+  deposit            Deposit          @relation(fields: [depositId], references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@index([maturityDate])
+}
+
+model Withdrawal {
+  id               String           @id @default(cuid())
+  clientId         String
+  fullName         String
+  bankToTransferTo Bank
+  accountNumber    String
+  recipientName    String
+  amount           Decimal          @db.Decimal(18, 2)
+  status           WithdrawalStatus @default(PENDING)
+  rejectionNote    String?
+  requestedAt      DateTime         @default(now())
+  confirmedAt      DateTime?
+  updatedAt        DateTime         @updatedAt
+  client           User             @relation(fields: [clientId], references: [id])
+
+  @@index([clientId])
+  @@index([status])
+  @@index([requestedAt])
+}
+
+model InterestRate {
+  id               String           @id @default(cuid())
+  investmentPeriod InvestmentPeriod @unique
+  ratePercentage   Decimal          @db.Decimal(5, 2)
+  updatedAt        DateTime         @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("system")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String
+  action     String
+  details    String
+  targetId   String?
+  targetType String?
+  timestamp  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+enum Role {
+  ADMIN
+  ACCOUNTANT
+  CLIENT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum Bank {
+  BANCOBU
+  BCB
+  KCB
+  ECOBANK
+}
+
+enum InvestmentPeriod {
+  WEEKLY
+  MONTHLY
+  THREE_MONTHS
+  SIX_MONTHS
+  ONE_YEAR
+  FIVE_YEARS
+}
+
+enum DepositStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum InvestmentStatus {
+  ACTIVE
+  MATURED
+  CLOSED
+}

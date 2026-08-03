@@ -11,7 +11,6 @@ import { mockLogin } from "@/lib/mock-api";
 import { loginSchema, type LoginFormValues } from "@/lib/zod-schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { mockUsers } from "@/lib/mock-data";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -31,15 +30,15 @@ export default function LoginPage() {
   });
 
   const demoAccounts = [
-    { label: "Admin", email: "admin@investo.bi", role: "admin" },
-    { label: "Accountant (Full)", email: "grace@investo.bi", role: "accountant" },
-    { label: "Accountant (Limited)", email: "patrick@investo.bi", role: "accountant" },
-    { label: "Client", email: "kevin@example.com", role: "client" },
+    { label: "Admin", email: "admin@investo.bi", password: "Admin@2024!", role: "admin" },
+    { label: "Accountant (Full)", email: "grace@investo.bi", password: "Grace@2024!", role: "accountant" },
+    { label: "Accountant (Limited)", email: "patrick@investo.bi", password: "Patrick@2024!", role: "accountant" },
+    { label: "Client", email: "kevin@example.com", password: "Client@2024!", role: "client" },
   ];
 
-  function fillDemo(email: string, role: string) {
+  function fillDemo(email: string, password: string, role: string) {
     setValue("email", email);
-    setValue("password", "demo1234");
+    setValue("password", password);
     setQuickRole(role);
     setLoginError(null);
   }
@@ -48,7 +47,7 @@ export default function LoginPage() {
     setLoginError(null);
     const user = await mockLogin(data.email, data.password);
     if (!user) {
-      setLoginError("Invalid email or account is suspended.");
+      setLoginError("Invalid email or password. Check your credentials.");
       return;
     }
     login(user);
@@ -84,7 +83,7 @@ export default function LoginPage() {
                 <button
                   key={acc.email}
                   type="button"
-                  onClick={() => fillDemo(acc.email, acc.role)}
+                  onClick={() => fillDemo(acc.email, acc.password, acc.role)}
                   className={`text-left rounded-lg border px-3 py-2 text-xs transition-colors ${
                     quickRole === acc.role && acc.email === (demoAccounts.find(d => d.role === quickRole)?.email)
                       ? "border-navy-600 bg-navy-50 text-navy-700"
@@ -154,7 +153,7 @@ export default function LoginPage() {
           </form>
 
           <p className="mt-4 text-center text-xs text-gray-400">
-            Use any password for demo accounts
+            Click a demo account to auto-fill credentials
           </p>
         </div>
       </div>
