@@ -3,7 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 RUN npx prisma generate
@@ -16,7 +16,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --legacy-peer-deps
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
@@ -24,5 +24,5 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3001
 
-# Run migrations then start — safe for Render zero-downtime deploys
+# Run migrations then start
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main"]
