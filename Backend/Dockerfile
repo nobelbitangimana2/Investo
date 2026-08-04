@@ -15,14 +15,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+# Install all production deps (prisma is in dependencies, so engines install too)
 COPY package*.json .npmrc ./
-# prisma is now in dependencies so it installs with --omit=dev
-# this also brings @prisma/engines along correctly
 RUN npm ci --omit=dev
 
-# Copy compiled app and generated Prisma client from builder
+# Copy compiled app
 COPY --from=builder /app/dist ./dist
+
+# Copy generated Prisma client (query engine binary built for this OS/arch)
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Copy prisma schema (needed by migrate deploy)
 COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3001
