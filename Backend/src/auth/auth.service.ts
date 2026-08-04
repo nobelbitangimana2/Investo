@@ -3,7 +3,7 @@ import {
   ConflictException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -98,15 +98,19 @@ export class AuthService {
   private async generateTokens(userId: string, email: string, role: Role) {
     const payload = { sub: userId, email, role };
 
+    const accessOptions: JwtSignOptions = {
+      secret: this.config.get<string>('JWT_ACCESS_SECRET'),
+      expiresIn: (this.config.get<string>('JWT_ACCESS_EXPIRY') ?? '15m') as JwtSignOptions['expiresIn'],
+    };
+
+    const refreshOptions: JwtSignOptions = {
+      secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      expiresIn: (this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d') as JwtSignOptions['expiresIn'],
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
-      this.jwt.signAsync(payload, {
-        secret: this.config.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRY') ?? '15m',
-      }),
-      this.jwt.signAsync(payload, {
-        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d',
-      }),
+      this.jwt.signAsync(payload, accessOptions),
+      this.jwt.signAsync(payload, refreshOptions),
     ]);
 
     const expiresAt = new Date();
