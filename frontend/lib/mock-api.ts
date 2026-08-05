@@ -45,6 +45,7 @@ function normalizeUser(u: Record<string, unknown>): User {
 function normalizeDeposit(d: Record<string, unknown>): Deposit {
   return {
     ...(d as Deposit),
+    amount: Number(d.amount),
     status: (d.status as string).toLowerCase() as Deposit["status"],
     bank: normBank(d.bank as string),
     investmentPeriod: normPeriod(d.investmentPeriod as string),
@@ -57,6 +58,7 @@ function normalizeDeposit(d: Record<string, unknown>): Deposit {
 function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
   return {
     ...(w as Withdrawal),
+    amount: Number(w.amount),
     status: (w.status as string).toLowerCase() as Withdrawal["status"],
     bankToTransferTo: normBank(w.bankToTransferTo as string),
   };
@@ -138,10 +140,18 @@ function periodToEnum(p: string): string {
   return map[p] ?? p;
 }
 
-// Unwrap paginated response { data: [...], meta: {...} }
+// Unwrap paginated response
+// Backend returns: { success: true, data: { data: [...], meta: {...} } }
+// api-client already strips the outer { success, data } envelope
+// so here we receive: { data: [...], meta: {...} }
 function unwrapPage<T>(res: unknown): T[] {
-  if (res && typeof res === "object" && "data" in res) {
-    return (res as { data: T[] }).data;
+  if (res && typeof res === "object") {
+    // paginated: { data: [...], meta: {...} }
+    if ("data" in res && Array.isArray((res as Record<string, unknown>).data)) {
+      return (res as { data: T[] }).data;
+    }
+    // already an array
+    if (Array.isArray(res)) return res as T[];
   }
   return res as T[];
 }

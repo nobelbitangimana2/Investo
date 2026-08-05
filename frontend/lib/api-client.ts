@@ -46,6 +46,8 @@ export async function apiFetch<T>(
 
   // Unwrap the { success, data } envelope our backend sends
   const json = await res.json().catch(() => ({}));
+  // Handle double-wrapped responses: { success, data: { data: [], meta: {} } }
+  // and single-wrapped: { success, data: {...} }
   const data = json?.data !== undefined ? json.data : json;
 
   if (!res.ok) {
