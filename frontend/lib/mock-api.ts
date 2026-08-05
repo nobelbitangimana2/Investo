@@ -45,7 +45,7 @@ function normalizeUser(u: Record<string, unknown>): User {
 function normalizeDeposit(d: Record<string, unknown>): Deposit {
   return {
     ...(d as Deposit),
-    amount: Number(d.amount),
+    amount: toNumber(d.amount),
     status: (d.status as string).toLowerCase() as Deposit["status"],
     bank: normBank(d.bank as string),
     investmentPeriod: normPeriod(d.investmentPeriod as string),
@@ -58,25 +58,25 @@ function normalizeDeposit(d: Record<string, unknown>): Deposit {
 function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
   return {
     ...(w as Withdrawal),
-    amount: Number(w.amount),
+    amount: toNumber(w.amount),
     status: (w.status as string).toLowerCase() as Withdrawal["status"],
     bankToTransferTo: normBank(w.bankToTransferTo as string),
   };
 }
 
 function normalizeInvestment(i: Record<string, unknown>): Investment {
+  const originalPrincipal = toNumber(i.originalPrincipal ?? i.amount);
+  const interestRate = toNumber(i.interestRate);
   return {
     ...(i as Investment),
     status: (i.status as string).toLowerCase() as Investment["status"],
     investmentPeriod: normPeriod(i.investmentPeriod as string),
-    amount: Number(i.originalPrincipal ?? i.amount),
-    currentPrincipal: Number(i.currentPrincipal),
-    accruedInterest: Number(i.accruedInterest),
-    interestRate: Number(i.interestRate) * 100, // backend stores 0.35, frontend shows 35
-    expectedInterest:
-      Number(i.originalPrincipal ?? i.amount) * Number(i.interestRate),
-    expectedMaturityValue:
-      Number(i.originalPrincipal ?? i.amount) * (1 + Number(i.interestRate)),
+    amount: originalPrincipal,
+    currentPrincipal: toNumber(i.currentPrincipal),
+    accruedInterest: toNumber(i.accruedInterest),
+    interestRate: interestRate * 100,
+    expectedInterest: originalPrincipal * interestRate,
+    expectedMaturityValue: originalPrincipal * (1 + interestRate),
     confirmationDate: (i.confirmationDate as string) ?? "",
     maturityDate: (i.maturityDate as string) ?? "",
     depositId: (i.depositId as string) ?? "",
@@ -91,8 +91,31 @@ function normalizeNotification(n: Record<string, unknown>): Notification {
   };
 }
 
-// Bank enum: backend = BANCOBU | BCB | KCB | ECOBANK
-// frontend  = Bancobu | BCB | KCB | Ecobank
+// Extract number from Prisma Decimal object or plain number/string
+// Prisma Decimal serializes as: { s: 1, e: 6, d: [1500000] }
+function toNumber(val: unknown): number {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === "number") return val;
+  if (typeof val === "string") return parseFloat(val);
+  if (typeof val === "object") {
+    const dec = val as { d?: number[]; s?: number; e?: number };
+    if (Array.isArray(dec.d) && dec.d.length > 0) {
+      // Reconstruct: s * d[0] * 10^(e - (d[0].toString().length - 1))
+      // Simpler: just use the toString() method if available
+      if (typeof (val as Record<string, unknown>).toString === "function") {
+        const str = (val as { toString: () => string }).toString();
+        const parsed = parseFloat(str);
+        if (!isNaN(parsed)) return parsed;
+      }
+      // Fallback: d[0] contains the significant digits
+      const significant = dec.d[0];
+      const exponent = dec.e ?? 0;
+      const digits = significant.toString().length - 1;
+      return (dec.s ?? 1) * significant * Math.pow(10, exponent - digits);
+    }
+  }
+  return Number(val);
+}
 function normBank(b: string): Deposit["bank"] {
   const map: Record<string, Deposit["bank"]> = {
     BANCOBU: "Bancobu",
@@ -387,7 +410,7 @@ export async function getInterestRates(): Promise<InterestRate[]> {
   return rates.map((r) => ({
     id: r.id as string,
     investmentPeriod: normPeriod(r.investmentPeriod as string),
-    ratePercentage: Number(r.ratePercentage),
+    ratePercentage: toNumber(r.ratePercentage),
     dateUpdated: (r.updatedAt ?? r.dateUpdated) as string,
   }));
 }
@@ -403,7 +426,7 @@ export async function upsertInterestRate(
   return {
     id: res.id as string,
     investmentPeriod: normPeriod(res.investmentPeriod as string),
-    ratePercentage: Number(res.ratePercentage),
+    ratePercentage: toNumber(res.ratePercentage),
     dateUpdated: (res.updatedAt ?? res.dateUpdated) as string,
   };
 }
