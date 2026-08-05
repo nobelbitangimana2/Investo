@@ -6,8 +6,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
-  return `${amount.toLocaleString("fr-BI")} BIF`;
+export function formatCurrency(amount: number | string): string {
+  return `${Number(amount).toLocaleString("fr-BI")} BIF`;
 }
 
 export function formatDate(dateString: string): string {

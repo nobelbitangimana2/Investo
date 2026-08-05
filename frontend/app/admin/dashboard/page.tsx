@@ -55,10 +55,10 @@ export default function AdminDashboard() {
   }, [user]);
 
   const confirmedDeposits = deposits.filter((d) => d.status === "confirmed");
-  const totalDeposited = confirmedDeposits.reduce((s, d) => s + d.amount, 0);
+  const totalDeposited = confirmedDeposits.reduce((s, d) => s + Number(d.amount), 0);
   const activeInvestments = investments.filter((i) => i.status === "active");
-  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + i.expectedInterest, 0);
-  const totalMaturityValue = activeInvestments.reduce((s, i) => s + i.expectedMaturityValue, 0);
+  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + Number(i.expectedInterest), 0);
+  const totalMaturityValue = activeInvestments.reduce((s, i) => s + Number(i.expectedMaturityValue), 0);
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Growth trend chart (mock monthly data)
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
     amount:
       confirmedDeposits
         .filter((d) => d.bank === bank)
-        .reduce((s, d) => s + d.amount, 0) / 1_000_000,
+        .reduce((s, d) => s + Number(d.amount), 0) / 1_000_000,
   }));
 
   if (loading) {

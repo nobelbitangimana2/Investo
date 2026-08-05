@@ -43,16 +43,15 @@ export default function ClientDashboard() {
   }, [user]);
 
   const confirmedDeposits = deposits.filter((d) => d.status === "confirmed");
-  const totalDeposited = confirmedDeposits.reduce((s, d) => s + d.amount, 0);
+  const totalDeposited = confirmedDeposits.reduce((s, d) => s + Number(d.amount), 0);
   const activeInvestments = investments.filter((i) => i.status === "active");
 
-  // Balance = sum of (currentPrincipal + accruedInterest) across ALL investments (active + matured)
   const totalBalance = investments.reduce(
-    (s, inv) => s + inv.currentPrincipal + inv.accruedInterest,
+    (s, inv) => s + Number(inv.currentPrincipal) + Number(inv.accruedInterest),
     0
   );
 
-  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + i.expectedInterest, 0);
+  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + Number(i.expectedInterest), 0);
 
   if (loading) {
     return (
