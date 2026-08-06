@@ -30,7 +30,7 @@ export class InvestmentsService {
     // Enrich with live maturity value
     const enriched = investments.map((inv) => ({
       ...inv,
-      currentBalance: Number(inv.currentPrincipal) + Number(inv.accruedInterest),
+      currentBalance: parseFloat(inv.currentPrincipal.toString()) + parseFloat(inv.accruedInterest.toString()),
       projectedMaturityValue: this.interest.calculateMaturityValue(inv),
     }));
 

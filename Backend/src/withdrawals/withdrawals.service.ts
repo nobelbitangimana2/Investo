@@ -76,7 +76,7 @@ export class WithdrawalsService {
 
     const totalPortfolio = investments.reduce(
       (sum, inv) =>
-        sum + Number(inv.currentPrincipal) + Number(inv.accruedInterest),
+        sum + parseFloat(inv.currentPrincipal.toString()) + parseFloat(inv.accruedInterest.toString()),
       0,
     );
 
@@ -186,7 +186,7 @@ export class WithdrawalsService {
 
     const totalPortfolio = refreshed.reduce(
       (sum, inv) =>
-        sum + Number(inv.currentPrincipal) + Number(inv.accruedInterest),
+        sum + parseFloat(inv.currentPrincipal.toString()) + parseFloat(inv.accruedInterest.toString()),
       0,
     );
 
@@ -285,7 +285,7 @@ export class WithdrawalsService {
   ): DeductionResult[] {
     const totalPortfolio = investments.reduce(
       (sum, inv) =>
-        sum + Number(inv.currentPrincipal) + Number(inv.accruedInterest),
+        sum + parseFloat(inv.currentPrincipal.toString()) + parseFloat(inv.accruedInterest.toString()),
       0,
     );
 
@@ -294,25 +294,23 @@ export class WithdrawalsService {
     const results: DeductionResult[] = [];
 
     if (investments.length === 1) {
-      // ── Single investment: direct interest-first deduction ────────
       const inv = investments[0];
       const deduction = applyInterestFirst(
-        Number(inv.currentPrincipal),
-        Number(inv.accruedInterest),
+        parseFloat(inv.currentPrincipal.toString()),
+        parseFloat(inv.accruedInterest.toString()),
         requestedAmount,
       );
       results.push({ investmentId: inv.id, ...deduction });
     } else {
-      // ── Multiple investments: proportional + interest-first ───────
       const withdrawalRatio = requestedAmount / totalPortfolio;
 
       for (const inv of investments) {
         const currentValue =
-          Number(inv.currentPrincipal) + Number(inv.accruedInterest);
+          parseFloat(inv.currentPrincipal.toString()) + parseFloat(inv.accruedInterest.toString());
         const allocated = currentValue * withdrawalRatio;
         const deduction = applyInterestFirst(
-          Number(inv.currentPrincipal),
-          Number(inv.accruedInterest),
+          parseFloat(inv.currentPrincipal.toString()),
+          parseFloat(inv.accruedInterest.toString()),
           allocated,
         );
         results.push({ investmentId: inv.id, ...deduction });

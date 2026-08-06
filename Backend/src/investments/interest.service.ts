@@ -26,7 +26,7 @@ export class InterestService {
   // ── Calculate daily interest for one investment ────────────────────
   calculateDailyInterest(investment: Investment): number {
     return (
-      Number(investment.currentPrincipal) * (Number(investment.interestRate) / 365)
+      parseFloat(investment.currentPrincipal.toString()) * (parseFloat(investment.interestRate.toString()) / 365)
     );
   }
 
@@ -47,7 +47,7 @@ export class InterestService {
     if (daysElapsed <= 0) return inv; // nothing to accrue
 
     const newInterest = this.calculateDailyInterest(inv) * daysElapsed;
-    const newAccrued = Number(inv.accruedInterest) + newInterest;
+    const newAccrued = parseFloat(inv.accruedInterest.toString()) + newInterest;
 
     // Auto-mature if past maturity date
     const nowMatured = now >= inv.maturityDate;
@@ -73,8 +73,8 @@ export class InterestService {
     const futureInterest =
       this.calculateDailyInterest(investment) * daysToMaturity;
     return (
-      Number(investment.currentPrincipal) +
-      Number(investment.accruedInterest) +
+      parseFloat(investment.currentPrincipal.toString()) +
+      parseFloat(investment.accruedInterest.toString()) +
       futureInterest
     );
   }
