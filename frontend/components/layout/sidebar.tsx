@@ -41,6 +41,7 @@ const navItems: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/accountant/dashboard", roles: ["accountant"] },
   { label: "Deposits", icon: PiggyBank, href: "/accountant/deposits", roles: ["accountant"] },
   { label: "Withdrawals", icon: ArrowUpFromLine, href: "/accountant/withdrawals", roles: ["accountant"] },
+  { label: "Notifications", icon: Bell, href: "/accountant/notifications", roles: ["accountant"] },
   { label: "Reports", icon: FileBarChart, href: "/accountant/reports", roles: ["accountant"] },
 
   // Admin
@@ -50,6 +51,7 @@ const navItems: NavItem[] = [
   { label: "Clients", icon: Users, href: "/admin/clients", roles: ["admin"] },
   { label: "Accountants", icon: Shield, href: "/admin/accountants", roles: ["admin"] },
   { label: "Interest Rates", icon: Percent, href: "/admin/interest-rates", roles: ["admin"] },
+  { label: "Notifications", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
   { label: "Reports", icon: FileBarChart, href: "/admin/reports", roles: ["admin"] },
   { label: "Audit Logs", icon: FileText, href: "/admin/audit-logs", roles: ["admin"] },
 ];

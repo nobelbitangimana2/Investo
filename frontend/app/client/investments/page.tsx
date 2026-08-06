@@ -2,31 +2,98 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
-import { getInvestments } from "@/lib/mock-api";
+import { getInvestments, getWithdrawals } from "@/lib/mock-api";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DataTable, type Column } from "@/components/ui/data-table";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { TrendingUp, Calendar, Percent, DollarSign, Info, PiggyBank } from "lucide-react";
-import type { Investment } from "@/types";
+import {
+  TrendingUp,
+  Calendar,
+  Percent,
+  DollarSign,
+  Info,
+  PiggyBank,
+  RefreshCw,
+  ArrowUpFromLine,
+} from "lucide-react";
+import type { Investment, Withdrawal } from "@/types";
+
+// ── How many full cycles have completed for an investment ─────────────────
+function getPeriodDays(period: string): number {
+  const map: Record<string, number> = {
+    Weekly: 7,
+    Monthly: 30,
+    "3 Months": 90,
+    "6 Months": 180,
+    "1 Year": 365,
+    "5 Years": 1825,
+  };
+  return map[period] ?? 30;
+}
+
+function getCompletedCycles(inv: Investment): number {
+  const start = new Date(inv.confirmationDate).getTime();
+  const now = Date.now();
+  const elapsedDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+  const periodDays = getPeriodDays(inv.investmentPeriod);
+  return Math.floor(elapsedDays / periodDays);
+}
+
+// Expected interest per cycle based on current principal
+function getExpectedInterestPerCycle(inv: Investment): number {
+  return Number(inv.currentPrincipal) * (Number(inv.interestRate) / 100);
+}
 
 export default function ClientInvestmentsPage() {
   const { user } = useAuthStore();
   const [investments, setInvestments] = useState<Investment[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    getInvestments(user.id, true).then((i) => {
+    Promise.all([
+      getInvestments(user.id, true),
+      getWithdrawals(user.id, true),
+    ]).then(([i, w]) => {
       setInvestments(i);
+      setWithdrawals(w);
       setLoading(false);
     });
   }, [user]);
 
-  const activeInvestments = investments.filter((i) => i.status === "active");
   const totalBalance = investments.reduce(
-    (s, inv) => s + inv.currentPrincipal + inv.accruedInterest,
-    0
+    (s, inv) => s + Number(inv.currentPrincipal) + Number(inv.accruedInterest),
+    0,
   );
+
+  // Expected interest = sum across ALL investments of (currentPrincipal * rate)
+  // This updates automatically after deposits/withdrawals change the principal
+  const totalExpectedInterest = investments.reduce(
+    (s, inv) => s + getExpectedInterestPerCycle(inv),
+    0,
+  );
+
+  const withdrawalColumns: Column<Withdrawal>[] = [
+    { key: "requestedAt", header: "Date", cell: (r) => formatDate(r.requestedAt) },
+    { key: "bankToTransferTo", header: "Bank" },
+    { key: "accountNumber", header: "Account" },
+    { key: "amount", header: "Amount", cell: (r) => formatCurrency(r.amount) },
+    { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    {
+      key: "rejectionNote",
+      header: "Note",
+      cell: (r) =>
+        r.rejectionNote ? (
+          <span className="text-xs text-red-500 max-w-[140px] block truncate" title={r.rejectionNote}>
+            {r.rejectionNote}
+          </span>
+        ) : (
+          <span className="text-gray-300">—</span>
+        ),
+    },
+  ];
 
   if (loading) {
     return (
@@ -43,30 +110,27 @@ export default function ClientInvestmentsPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Investments</h1>
         <p className="text-gray-500 mt-0.5 text-sm">
-          {investments.length} investment{investments.length !== 1 ? "s" : ""} ·{" "}
-          {activeInvestments.length} active
+          {investments.length} investment{investments.length !== 1 ? "s" : ""}
         </p>
       </div>
 
-      {/* Withdrawal rules info banner */}
+      {/* How it works */}
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 flex gap-3">
         <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
         <div className="space-y-1 text-sm text-blue-800">
-          <p className="font-semibold">How withdrawals work</p>
+          <p className="font-semibold">How your investments work</p>
           <ul className="list-disc list-inside space-y-0.5 text-blue-700 text-xs">
             <li>
-              Interest is always deducted first, then principal — your capital is protected as long
-              as possible.
+              Investments are <strong>perpetual</strong> — they keep running after each cycle ends
+              until you withdraw all your money.
             </li>
             <li>
-              If you have multiple investments, the withdrawal is distributed proportionally across
-              all of them based on their current value.
+              <strong>Expected interest</strong> is calculated on your current principal each cycle
+              and updates whenever you deposit or withdraw.
             </li>
             <li>
-              Future interest is calculated only on the remaining principal after each withdrawal.
-            </li>
-            <li>
-              Maximum withdrawal = Current Principal + Accrued Interest (your current balance).
+              Withdrawals deduct interest first, then principal. Future interest is based on the
+              remaining principal.
             </li>
           </ul>
         </div>
@@ -93,18 +157,18 @@ export default function ClientInvestmentsPage() {
               <CardContent className="p-5">
                 <p className="text-xs font-medium text-gray-500">Total Principal</p>
                 <p className="mt-1 text-2xl font-bold text-gray-900">
-                  {formatCurrency(investments.reduce((s, i) => s + i.currentPrincipal, 0))}
+                  {formatCurrency(investments.reduce((s, i) => s + Number(i.currentPrincipal), 0))}
                 </p>
                 <p className="text-[11px] text-gray-400 mt-0.5">Remaining capital</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-gray-500">Total Accrued Interest</p>
+                <p className="text-xs font-medium text-gray-500">Expected Interest / Cycle</p>
                 <p className="mt-1 text-2xl font-bold text-emerald-600">
-                  {formatCurrency(investments.reduce((s, i) => s + i.accruedInterest, 0))}
+                  {formatCurrency(totalExpectedInterest)}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Earned so far</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">Updates with each deposit/withdrawal</p>
               </CardContent>
             </Card>
           </div>
@@ -112,20 +176,30 @@ export default function ClientInvestmentsPage() {
           {/* Individual investment cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {investments.map((inv) => {
-              const balance = inv.currentPrincipal + inv.accruedInterest;
+              const balance = Number(inv.currentPrincipal) + Number(inv.accruedInterest);
+              const cycles = getCompletedCycles(inv);
+              const expectedPerCycle = getExpectedInterestPerCycle(inv);
               return (
                 <Card key={inv.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
                         <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(inv.amount)}
+                          {formatCurrency(Number(inv.amount))}
                         </p>
                         <p className="text-sm text-gray-500 mt-0.5">
-                          {inv.investmentPeriod} Investment
+                          {inv.investmentPeriod} · Perpetual Investment
                         </p>
                       </div>
-                      <StatusBadge status={inv.status} />
+                      <div className="flex flex-col items-end gap-1">
+                        <StatusBadge status={inv.status} />
+                        {cycles > 0 && (
+                          <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                            <RefreshCw className="h-3 w-3" />
+                            {cycles} cycle{cycles !== 1 ? "s" : ""} completed
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Balance breakdown */}
@@ -136,7 +210,7 @@ export default function ClientInvestmentsPage() {
                           Current Principal
                         </span>
                         <span className="font-semibold text-gray-800">
-                          {formatCurrency(inv.currentPrincipal)}
+                          {formatCurrency(Number(inv.currentPrincipal))}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
@@ -145,7 +219,7 @@ export default function ClientInvestmentsPage() {
                           Accrued Interest
                         </span>
                         <span className="font-semibold text-emerald-600">
-                          +{formatCurrency(inv.accruedInterest)}
+                          +{formatCurrency(Number(inv.accruedInterest))}
                         </span>
                       </div>
                       <div className="pt-1.5 border-t border-gray-200 flex justify-between text-sm">
@@ -171,9 +245,9 @@ export default function ClientInvestmentsPage() {
                           <DollarSign className="h-4 w-4 text-emerald-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Expected Interest</p>
+                          <p className="text-xs text-gray-400">Expected / Cycle</p>
                           <p className="text-sm font-semibold text-emerald-700">
-                            {formatCurrency(inv.expectedInterest)}
+                            {formatCurrency(expectedPerCycle)}
                           </p>
                         </div>
                       </div>
@@ -182,7 +256,7 @@ export default function ClientInvestmentsPage() {
                           <Calendar className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Confirmed</p>
+                          <p className="text-xs text-gray-400">Started</p>
                           <p className="text-sm font-semibold text-gray-800">
                             {formatDate(inv.confirmationDate)}
                           </p>
@@ -190,26 +264,43 @@ export default function ClientInvestmentsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
-                          <Calendar className="h-4 w-4 text-purple-600" />
+                          <RefreshCw className="h-4 w-4 text-purple-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Matures</p>
+                          <p className="text-xs text-gray-400">Cycles Done</p>
                           <p className="text-sm font-semibold text-gray-800">
-                            {formatDate(inv.maturityDate)}
+                            {cycles}
                           </p>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-                      <span>Deposit: {inv.depositId}</span>
-                      <span>ID: {inv.id}</span>
                     </div>
                   </CardContent>
                 </Card>
               );
             })}
           </div>
+
+          {/* Withdrawal History */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ArrowUpFromLine className="h-5 w-5 text-gray-600" />
+                Withdrawal History
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {withdrawals.length === 0 ? (
+                <p className="text-sm text-gray-400 py-4 text-center">No withdrawals yet.</p>
+              ) : (
+                <DataTable
+                  data={withdrawals}
+                  columns={withdrawalColumns}
+                  searchable={false}
+                  pageSize={5}
+                />
+              )}
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

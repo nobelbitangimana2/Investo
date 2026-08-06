@@ -11,6 +11,7 @@ import {
   XCircle,
   DollarSign,
   Bell,
+  Wallet,
 } from "lucide-react";
 import {
   getDeposits,
@@ -59,6 +60,11 @@ export default function AdminDashboard() {
   const activeInvestments = investments.filter((i) => i.status === "active");
   const totalExpectedInterest = activeInvestments.reduce((s, i) => s + Number(i.expectedInterest), 0);
   const totalMaturityValue = activeInvestments.reduce((s, i) => s + Number(i.expectedMaturityValue), 0);
+  // Total balance = sum of all clients' currentPrincipal + accruedInterest across ALL investments
+  const totalBalance = investments.reduce(
+    (s, i) => s + Number(i.currentPrincipal) + Number(i.accruedInterest),
+    0,
+  );
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Growth trend chart (mock monthly data)
@@ -114,10 +120,17 @@ export default function AdminDashboard() {
           icon={PiggyBank}
         />
         <StatCard
+          title="Total Balance"
+          value={formatCurrency(totalBalance)}
+          icon={Wallet}
+          iconClassName="bg-emerald-50"
+          description="Principal + accrued interest"
+        />
+        <StatCard
           title="Active Investments"
           value={activeInvestments.length}
           icon={TrendingUp}
-          iconClassName="bg-emerald-50"
+          iconClassName="bg-blue-50"
         />
         <StatCard
           title="Expected Interest"
@@ -142,12 +155,6 @@ export default function AdminDashboard() {
           value={withdrawals.filter((w) => w.status === "pending").length}
           icon={ArrowUpFromLine}
           iconClassName="bg-blue-50"
-        />
-        <StatCard
-          title="Total Maturity Value"
-          value={formatCurrency(totalMaturityValue)}
-          icon={XCircle}
-          iconClassName="bg-purple-50"
         />
       </div>
 

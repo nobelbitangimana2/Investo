@@ -50,9 +50,13 @@ export default function AdminClientDetailPage() {
   }
 
   const confirmedDeposits = deposits.filter((d) => d.status === "confirmed");
-  const totalDeposited = confirmedDeposits.reduce((s, d) => s + d.amount, 0);
+  const totalDeposited = confirmedDeposits.reduce((s, d) => s + Number(d.amount), 0);
+  const totalBalance = investments.reduce(
+    (s, i) => s + Number(i.currentPrincipal) + Number(i.accruedInterest),
+    0,
+  );
   const activeInvestments = investments.filter((i) => i.status === "active");
-  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + i.expectedInterest, 0);
+  const totalExpectedInterest = activeInvestments.reduce((s, i) => s + Number(i.expectedInterest), 0);
 
   const depositColumns: Column<Deposit>[] = [
     { key: "depositDate", header: "Date", cell: (r) => formatDate(r.depositDate) },
@@ -107,10 +111,15 @@ export default function AdminClientDetailPage() {
       </Card>
 
       {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <Card className="text-center p-4">
           <p className="text-xs text-gray-400">Total Deposited</p>
           <p className="text-xl font-bold text-gray-900 mt-1">{formatCurrency(totalDeposited)}</p>
+        </Card>
+        <Card className="text-center p-4 bg-navy-50 border-navy-100">
+          <p className="text-xs text-gray-400">Current Balance</p>
+          <p className="text-xl font-bold text-navy-700 mt-1">{formatCurrency(totalBalance)}</p>
+          <p className="text-[10px] text-gray-400">Principal + interest</p>
         </Card>
         <Card className="text-center p-4">
           <p className="text-xs text-gray-400">Active Investments</p>

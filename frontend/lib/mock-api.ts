@@ -340,6 +340,7 @@ export async function confirmDeposit(
   _verifiedBy: string,
 ): Promise<Deposit> {
   const res = await apiPatch<Record<string, unknown>>(`/deposits/${id}/confirm`);
+  // Backend automatically creates a notification for the client
   return normalizeDeposit(res);
 }
 
@@ -351,6 +352,7 @@ export async function rejectDeposit(
   const res = await apiPatch<Record<string, unknown>>(`/deposits/${id}/reject`, {
     rejectionNote,
   });
+  // Backend automatically creates a notification for the client
   return normalizeDeposit(res);
 }
 

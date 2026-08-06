@@ -24,9 +24,8 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
 
   const handleNotifications = () => {
     if (user?.role === "client") router.push("/client/notifications");
-    // Admin and accountant see notifications on their own dashboard; the bell just links there
-    if (user?.role === "admin") router.push("/admin/dashboard");
-    if (user?.role === "accountant") router.push("/accountant/dashboard");
+    if (user?.role === "admin") router.push("/admin/notifications");
+    if (user?.role === "accountant") router.push("/accountant/notifications");
   };
 
   return (

@@ -232,6 +232,12 @@ export class WithdrawalsService {
       'withdrawal',
     );
 
+    await this.notifications.notifyStaff(
+      'Withdrawal Confirmed',
+      `${withdrawal.fullName}'s withdrawal of ${requestedAmount.toLocaleString()} BIF was confirmed.`,
+      'withdrawal',
+    );
+
     await this.auditLogs.log(
       confirmerId,
       'CONFIRM_WITHDRAWAL',
@@ -267,6 +273,12 @@ export class WithdrawalsService {
       withdrawal.clientId,
       'Withdrawal Rejected',
       `Your withdrawal request for ${Number(withdrawal.amount).toLocaleString()} BIF was rejected. Reason: ${dto.rejectionNote}`,
+      'withdrawal',
+    );
+
+    await this.notifications.notifyStaff(
+      'Withdrawal Rejected',
+      `${withdrawal.fullName}'s withdrawal of ${Number(withdrawal.amount).toLocaleString()} BIF was rejected.`,
       'withdrawal',
     );
 

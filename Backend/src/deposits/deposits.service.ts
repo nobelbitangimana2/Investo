@@ -185,7 +185,14 @@ export class DepositsService {
       'deposit',
     );
 
-    // 4. Audit log
+    // 4. Notify all admins/accountants of the confirmation
+    await this.notifications.notifyStaff(
+      'Deposit Confirmed',
+      `${deposit.fullName}'s deposit of ${Number(deposit.amount).toLocaleString()} BIF was confirmed.`,
+      'deposit',
+    );
+
+    // 5. Audit log
     await this.auditLogs.log(
       verifierId,
       'CONFIRM_DEPOSIT',
@@ -218,6 +225,12 @@ export class DepositsService {
       deposit.clientId,
       'Deposit Rejected',
       `Your deposit of ${Number(deposit.amount).toLocaleString()} BIF was rejected. Reason: ${dto.rejectionNote}`,
+      'deposit',
+    );
+
+    await this.notifications.notifyStaff(
+      'Deposit Rejected',
+      `${deposit.fullName}'s deposit of ${Number(deposit.amount).toLocaleString()} BIF was rejected.`,
       'deposit',
     );
 
