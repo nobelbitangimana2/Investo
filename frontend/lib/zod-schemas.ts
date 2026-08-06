@@ -29,7 +29,7 @@ export const withdrawalSchema = z.object({
   amount: z
     .number({ invalid_type_error: "Amount must be a number" })
     .positive("Amount must be positive")
-    .min(100000, "Minimum withdrawal is 100,000 BIF"),
+    .min(1000, "Minimum withdrawal is 1,000 BIF"),
 });
 
 export const rejectSchema = z.object({

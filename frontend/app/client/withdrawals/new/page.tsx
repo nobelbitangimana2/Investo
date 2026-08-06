@@ -49,12 +49,27 @@ export default function NewWithdrawalPage() {
 
   async function onSubmit(data: WithdrawalFormValues) {
     if (!user) return;
+
+    // Client-side balance check before hitting the backend
+    if (totalBalance === 0) {
+      toast.error("You have no available balance to withdraw.");
+      return;
+    }
+
+    if (totalBalance > 0 && data.amount > totalBalance) {
+      toast.error(
+        `Insufficient balance. You can withdraw up to ${formatCurrency(totalBalance)}.`
+      );
+      return;
+    }
+
     try {
       await submitWithdrawal(user.id, data);
       toast.success("Withdrawal request submitted! Our team will process it shortly.");
       router.push("/client/withdrawals");
-    } catch {
-      toast.error("Failed to submit withdrawal. Please try again.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to submit withdrawal.";
+      toast.error(message);
     }
   }
 
@@ -216,6 +231,7 @@ export default function NewWithdrawalPage() {
                   <span className="font-semibold text-gray-600">
                     {formatCurrency(totalBalance)}
                   </span>
+                  {" "}· Minimum: {formatCurrency(1000)}
                 </p>
               )}
             </div>

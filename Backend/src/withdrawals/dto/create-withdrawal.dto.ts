@@ -23,6 +23,6 @@ export class CreateWithdrawalDto {
 
   @ApiProperty({ example: 500000 })
   @IsNumber()
-  @Min(1)
+  @Min(1000)
   amount: number;
 }
