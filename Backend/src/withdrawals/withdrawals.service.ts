@@ -70,8 +70,10 @@ export class WithdrawalsService {
   // ── Client: request withdrawal ────────────────────────────────────
   async create(clientId: string, dto: CreateWithdrawalDto) {
     // Validate the client has enough portfolio value before accepting request
+    // Include ALL investments (active + matured) — as long as there is
+    // remaining principal or accrued interest, the client can withdraw.
     const investments = await this.prisma.investment.findMany({
-      where: { clientId, status: InvestmentStatus.ACTIVE },
+      where: { clientId },
     });
 
     const totalPortfolio = investments.reduce(
@@ -171,17 +173,20 @@ export class WithdrawalsService {
     const requestedAmount = Number(withdrawal.amount);
 
     // Step 1: Refresh interest on all active investments for this client
+    // Include ALL investments with remaining balance
     const activeInvestments = await this.prisma.investment.findMany({
-      where: { clientId: withdrawal.clientId, status: InvestmentStatus.ACTIVE },
+      where: { clientId: withdrawal.clientId },
     });
 
     for (const inv of activeInvestments) {
-      await this.interest.updateAccruedInterest(inv.id);
+      if (inv.status === InvestmentStatus.ACTIVE) {
+        await this.interest.updateAccruedInterest(inv.id);
+      }
     }
 
     // Re-fetch updated balances
     const refreshed = await this.prisma.investment.findMany({
-      where: { clientId: withdrawal.clientId, status: InvestmentStatus.ACTIVE },
+      where: { clientId: withdrawal.clientId },
     });
 
     const totalPortfolio = refreshed.reduce(
