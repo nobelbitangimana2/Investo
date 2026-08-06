@@ -20,7 +20,7 @@ export default function AccountantClientDetailPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getUserById(id), getClientProfile(id), getDeposits(id), getInvestments(id)])
+    Promise.all([getUserById(id), getClientProfile(id), getDeposits(id, false), getInvestments(id, false)])
       .then(([u, p, d, i]) => { setUser(u); setProfile(p); setDeposits(d); setInvestments(i); setLoading(false); });
   }, [id]);
 

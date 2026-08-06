@@ -28,7 +28,7 @@ export default function NewWithdrawalPage() {
 
   useEffect(() => {
     if (!user) return;
-    getInvestments(user.id).then((inv) => {
+    getInvestments(user.id, true).then((inv) => {
       setInvestments(inv);
       setLoadingInvestments(false);
     });

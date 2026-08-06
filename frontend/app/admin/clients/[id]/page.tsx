@@ -24,9 +24,9 @@ export default function AdminClientDetailPage() {
     Promise.all([
       getUserById(id),
       getClientProfile(id),
-      getDeposits(id),
-      getWithdrawals(id),
-      getInvestments(id),
+      getDeposits(id, false),
+      getWithdrawals(id, false),
+      getInvestments(id, false),
     ]).then(([u, p, d, w, i]) => {
       setUser(u);
       setProfile(p);

@@ -18,7 +18,7 @@ export default function ClientWithdrawalsPage() {
 
   useEffect(() => {
     if (!user) return;
-    getWithdrawals(user.id).then((w) => { setWithdrawals(w); setLoading(false); });
+    getWithdrawals(user.id, true).then((w) => { setWithdrawals(w); setLoading(false); });
   }, [user]);
 
   const columns: Column<Withdrawal>[] = [

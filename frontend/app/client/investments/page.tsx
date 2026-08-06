@@ -16,7 +16,7 @@ export default function ClientInvestmentsPage() {
 
   useEffect(() => {
     if (!user) return;
-    getInvestments(user.id).then((i) => {
+    getInvestments(user.id, true).then((i) => {
       setInvestments(i);
       setLoading(false);
     });

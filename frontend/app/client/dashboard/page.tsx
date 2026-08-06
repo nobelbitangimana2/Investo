@@ -29,9 +29,9 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (!user) return;
     Promise.all([
-      getDeposits(user.id),
-      getWithdrawals(user.id),
-      getInvestments(user.id),
+      getDeposits(user.id, true),
+      getWithdrawals(user.id, true),
+      getInvestments(user.id, true),
       getNotifications(user.id),
     ]).then(([d, w, i, n]) => {
       setDeposits(d);

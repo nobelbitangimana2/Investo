@@ -286,9 +286,24 @@ export async function updateClientProfile(
 // Deposits
 // ─────────────────────────────────────────────
 
-export async function getDeposits(clientId?: string): Promise<Deposit[]> {
-  const endpoint = clientId ? "/deposits/me" : "/deposits?limit=100";
+export async function getDeposits(clientId?: string, isOwnData = false): Promise<Deposit[]> {
+  let endpoint: string;
+  if (!clientId) {
+    // Admin/accountant fetching all deposits
+    endpoint = "/deposits?limit=100";
+  } else if (isOwnData) {
+    // Client fetching their own deposits
+    endpoint = "/deposits/me?limit=100";
+  } else {
+    // Admin/accountant fetching a specific client's deposits
+    endpoint = `/deposits?clientId=${clientId}&limit=100`;
+  }
   const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeDeposit);
+}
+
+export async function getMyDeposits(): Promise<Deposit[]> {
+  const res = await apiGet<unknown>("/deposits/me?limit=100");
   return unwrapPage<Record<string, unknown>>(res).map(normalizeDeposit);
 }
 
@@ -343,9 +358,21 @@ export async function rejectDeposit(
 // Withdrawals
 // ─────────────────────────────────────────────
 
-export async function getWithdrawals(clientId?: string): Promise<Withdrawal[]> {
-  const endpoint = clientId ? "/withdrawals/me" : "/withdrawals?limit=100";
+export async function getWithdrawals(clientId?: string, isOwnData = false): Promise<Withdrawal[]> {
+  let endpoint: string;
+  if (!clientId) {
+    endpoint = "/withdrawals?limit=100";
+  } else if (isOwnData) {
+    endpoint = "/withdrawals/me?limit=100";
+  } else {
+    endpoint = `/withdrawals?clientId=${clientId}&limit=100`;
+  }
   const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeWithdrawal);
+}
+
+export async function getMyWithdrawals(): Promise<Withdrawal[]> {
+  const res = await apiGet<unknown>("/withdrawals/me?limit=100");
   return unwrapPage<Record<string, unknown>>(res).map(normalizeWithdrawal);
 }
 
@@ -394,9 +421,21 @@ export async function rejectWithdrawal(
 // Investments
 // ─────────────────────────────────────────────
 
-export async function getInvestments(clientId?: string): Promise<Investment[]> {
-  const endpoint = clientId ? "/investments/me" : "/investments?limit=100";
+export async function getInvestments(clientId?: string, isOwnData = false): Promise<Investment[]> {
+  let endpoint: string;
+  if (!clientId) {
+    endpoint = "/investments?limit=100";
+  } else if (isOwnData) {
+    endpoint = "/investments/me?limit=100";
+  } else {
+    endpoint = `/investments?clientId=${clientId}&limit=100`;
+  }
   const res = await apiGet<unknown>(endpoint);
+  return unwrapPage<Record<string, unknown>>(res).map(normalizeInvestment);
+}
+
+export async function getMyInvestments(): Promise<Investment[]> {
+  const res = await apiGet<unknown>("/investments/me?limit=100");
   return unwrapPage<Record<string, unknown>>(res).map(normalizeInvestment);
 }
 

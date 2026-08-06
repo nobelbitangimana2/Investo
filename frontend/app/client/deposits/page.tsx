@@ -20,7 +20,7 @@ export default function ClientDepositsPage() {
 
   useEffect(() => {
     if (!user) return;
-    getDeposits(user.id).then((d) => {
+    getDeposits(user.id, true).then((d) => {
       setDeposits(d);
       setLoading(false);
     });
