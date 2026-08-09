@@ -8,6 +8,38 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const registerSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(2, "First name must be at least 2 characters")
+      .max(50)
+      .transform((v) => v.trim()),
+    middleName: z
+      .string()
+      .max(50)
+      .optional()
+      .transform((v) => v?.trim() || undefined),
+    lastName: z
+      .string()
+      .min(2, "Last name must be at least 2 characters")
+      .max(50)
+      .transform((v) => v.trim()),
+    email: z
+      .string()
+      .email("Please enter a valid email address")
+      .transform((v) => v.toLowerCase().trim()),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .max(128, "Password is too long"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export const depositSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   bank: z.enum(BANKS, { required_error: "Please select a bank" }),
@@ -63,6 +95,7 @@ export const interestRateSchema = z.object({
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
+export type RegisterFormValues = z.infer<typeof registerSchema>;
 export type DepositFormValues = z.infer<typeof depositSchema>;
 export type WithdrawalFormValues = z.infer<typeof withdrawalSchema>;
 export type RejectFormValues = z.infer<typeof rejectSchema>;

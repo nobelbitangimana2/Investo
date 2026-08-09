@@ -33,3 +33,9 @@ services:
         value: "3001"
       - key: FRONTEND_URL
         sync: false          # set to your Vercel frontend URL
+      - key: RESEND_API_KEY
+        sync: false          # get from resend.com
+      - key: EMAIL_FROM
+        sync: false          # e.g. "Investo <noreply@yourdomain.com>"
+      - key: NEXT_PUBLIC_APP_URL
+        sync: false          # your Vercel frontend URL e.g. https://investo-beta.vercel.app

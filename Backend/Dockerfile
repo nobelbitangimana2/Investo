@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN apk add --no-cache openssl
 
-COPY package*.json .npmrc ./
+COPY .npmrc package*.json ./
 RUN npm ci
 
 COPY . .
@@ -19,7 +19,7 @@ ENV NODE_ENV=production
 
 RUN apk add --no-cache openssl
 
-COPY package*.json .npmrc ./
+COPY .npmrc package*.json ./
 RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist

@@ -9,27 +9,32 @@ datasource db {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  name                 String
-  email                String                @unique
-  passwordHash         String
-  role                 Role                  @default(CLIENT)
-  profilePicture       String?
-  status               UserStatus            @default(ACTIVE)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  accountantPermission AccountantPermission?
-  auditLogs            AuditLog[]
-  clientProfile        ClientProfile?
-  deposits             Deposit[]             @relation("ClientDeposits")
-  verifiedDeposits     Deposit[]             @relation("VerifiedDeposits")
-  investments          Investment[]
-  notifications        Notification[]
-  refreshTokens        RefreshToken[]
-  withdrawals          Withdrawal[]
+  id                       String                @id @default(cuid())
+  name                     String
+  email                    String                @unique
+  passwordHash             String
+  role                     Role                  @default(CLIENT)
+  profilePicture           String?
+  status                   UserStatus            @default(ACTIVE)
+  // ── Email verification ──────────────────────────────────────────
+  emailVerified            Boolean               @default(false)
+  verificationToken        String?               @unique
+  verificationTokenExpires DateTime?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+  accountantPermission     AccountantPermission?
+  auditLogs                AuditLog[]
+  clientProfile            ClientProfile?
+  deposits                 Deposit[]             @relation("ClientDeposits")
+  verifiedDeposits         Deposit[]             @relation("VerifiedDeposits")
+  investments              Investment[]
+  notifications            Notification[]
+  refreshTokens            RefreshToken[]
+  withdrawals              Withdrawal[]
 
   @@index([role])
   @@index([status])
+  @@index([verificationToken])
 }
 
 model RefreshToken {

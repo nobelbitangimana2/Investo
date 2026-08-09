@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { TrendingUp, Eye, EyeOff } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
-import { mockLogin } from "@/lib/mock-api";
+import { mockLogin, resendVerificationEmail } from "@/lib/mock-api";
 import { loginSchema, type LoginFormValues } from "@/lib/zod-schemas";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,10 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotSent, setForgotSent] = useState(false);
+  // Email-not-verified state
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState<string | null>(null);
   const { login } = useAuthStore();
   const router = useRouter();
 
@@ -48,18 +52,49 @@ export default function LoginPage() {
 
   async function onSubmit(data: LoginFormValues) {
     setLoginError(null);
-    const user = await mockLogin(data.email, data.password);
-    if (!user) {
-      setLoginError("Invalid email or password. Check your credentials.");
-      return;
+    setUnverifiedEmail(null);
+    setResendMsg(null);
+    try {
+      const user = await mockLogin(data.email, data.password);
+      if (!user) {
+        setLoginError("Invalid email or password. Check your credentials.");
+        return;
+      }
+      login(user);
+      const roleMap: Record<string, string> = {
+        admin: "/admin/dashboard",
+        accountant: "/accountant/dashboard",
+        client: "/client/dashboard",
+      };
+      router.push(roleMap[user.role] ?? "/");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "";
+      // Check for email-not-verified error code from backend
+      try {
+        const parsed = JSON.parse(message);
+        if (parsed?.code === "EMAIL_NOT_VERIFIED") {
+          setUnverifiedEmail(parsed.email ?? data.email);
+          return;
+        }
+      } catch {
+        // Not JSON — regular error
+      }
+      setLoginError(message || "Invalid email or password. Check your credentials.");
     }
-    login(user);
-    const roleMap: Record<string, string> = {
-      admin: "/admin/dashboard",
-      accountant: "/accountant/dashboard",
-      client: "/client/dashboard",
-    };
-    router.push(roleMap[user.role] ?? "/");
+  }
+
+  async function handleResendFromLogin() {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    setResendMsg(null);
+    try {
+      await resendVerificationEmail(unverifiedEmail);
+      setResendMsg("Verification email sent. Check your inbox.");
+    } catch {
+      setResendMsg("Failed to resend. Please try again.");
+    } finally {
+      setResending(false);
+    }
   }
 
   return (
@@ -149,6 +184,29 @@ export default function LoginPage() {
               </button>
             </div>
 
+            {unverifiedEmail && (
+              <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 space-y-2">
+                <p className="font-medium">Please verify your email before signing in.</p>
+                <p className="text-amber-700 text-xs">
+                  We sent a verification link to{" "}
+                  <span className="font-semibold">{unverifiedEmail}</span>.
+                </p>
+                {resendMsg && (
+                  <p className={`text-xs font-medium ${resendMsg.includes("sent") ? "text-emerald-700" : "text-red-600"}`}>
+                    {resendMsg}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick={handleResendFromLogin}
+                  disabled={resending}
+                  className="flex items-center gap-1.5 text-xs font-semibold text-amber-800 underline hover:text-amber-900 disabled:opacity-50"
+                >
+                  {resending ? "Sending…" : "Resend Verification Email"}
+                </button>
+              </div>
+            )}
+
             {loginError && (
               <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
                 {loginError}
@@ -167,6 +225,12 @@ export default function LoginPage() {
 
           <p className="mt-4 text-center text-xs text-gray-400">
             Click a demo account to auto-fill credentials
+          </p>
+          <p className="mt-3 text-center text-sm text-gray-500">
+            Don&apos;t have an account?{" "}
+            <Link href="/register" className="font-semibold text-navy-700 hover:underline">
+              Create one
+            </Link>
           </p>
         </div>
       </div>

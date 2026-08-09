@@ -196,9 +196,29 @@ export async function mockLogin(
 
     setTokens(res.accessToken, res.refreshToken);
     return normalizeUser(res.user);
-  } catch {
-    return null;
+  } catch (err) {
+    // Re-throw so login page can handle EMAIL_NOT_VERIFIED specifically
+    throw err;
   }
+}
+
+export async function registerUser(data: {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phone?: string;
+}): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/register", data);
+}
+
+export async function verifyEmail(token: string): Promise<{ message: string }> {
+  return apiGet<{ message: string }>(`/auth/verify-email?token=${encodeURIComponent(token)}`);
+}
+
+export async function resendVerificationEmail(email: string): Promise<{ message: string }> {
+  return apiPost<{ message: string }>("/auth/resend-verification", { email });
 }
 
 export async function logoutApi(refreshToken: string): Promise<void> {

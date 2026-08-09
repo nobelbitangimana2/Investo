@@ -9,7 +9,8 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 @Module({
   imports: [
     PassportModule,
-    JwtModule.register({}), // secrets injected per-call from ConfigService
+    JwtModule.register({}),
+    // MailModule is @Global so no need to import it here explicitly
   ],
   providers: [AuthService, JwtStrategy, JwtRefreshStrategy],
   controllers: [AuthController],
