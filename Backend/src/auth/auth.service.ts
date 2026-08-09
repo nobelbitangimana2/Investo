@@ -4,6 +4,7 @@ import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -24,6 +25,8 @@ const RESEND_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
@@ -71,9 +74,11 @@ export class AuthService {
       },
     });
 
-    // Send verification email — if it fails we still return success
-    // so the user knows their account was created
-    await this.mail.sendVerificationEmail(email, dto.firstName, token);
+    // Send verification email — non-blocking: if Resend fails (e.g. free tier
+    // restricts recipient addresses) registration still succeeds.
+    this.mail.sendVerificationEmail(email, dto.firstName, token).catch((err) => {
+      this.logger.warn(`Could not send verification email to ${email}: ${err?.message}`);
+    });
 
     return {
       message:

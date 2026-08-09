@@ -43,26 +43,28 @@ async function main() {
   // ── Admin user ──────────────────────────────────────────────────
   const admin = await prisma.user.upsert({
     where: { email: 'admin@investo.bi' },
-    update: {},
+    update: { emailVerified: true },
     create: {
       name: 'Emmanuel Nkurunziza',
       email: 'admin@investo.bi',
       passwordHash: await bcrypt.hash('Admin@2024!', SALT),
       role: Role.ADMIN,
       profilePicture: 'https://api.dicebear.com/7.x/initials/svg?seed=EN',
+      emailVerified: true,
     },
   });
 
   // ── Accountant 1 ────────────────────────────────────────────────
   const acc1 = await prisma.user.upsert({
     where: { email: 'grace@investo.bi' },
-    update: {},
+    update: { emailVerified: true },
     create: {
       name: 'Grace Iradukunda',
       email: 'grace@investo.bi',
       passwordHash: await bcrypt.hash('Grace@2024!', SALT),
       role: Role.ACCOUNTANT,
       profilePicture: 'https://api.dicebear.com/7.x/initials/svg?seed=GI',
+      emailVerified: true,
       accountantPermission: {
         create: {
           viewDeposits: true,
@@ -80,15 +82,16 @@ async function main() {
   // ── Accountant 2 ────────────────────────────────────────────────
   const acc2 = await prisma.user.upsert({
     where: { email: 'patrick@investo.bi' },
-    update: {},
+    update: { emailVerified: true },
     create: {
       name: 'Patrick Hakizimana',
       email: 'patrick@investo.bi',
       passwordHash: await bcrypt.hash('Patrick@2024!', SALT),
       role: Role.ACCOUNTANT,
       profilePicture: 'https://api.dicebear.com/7.x/initials/svg?seed=PH',
+      emailVerified: true,
       accountantPermission: {
-        create: {},  // all false by default
+        create: {},
       },
     },
   });
@@ -125,13 +128,14 @@ async function main() {
   for (const c of clientSeeds) {
     const user = await prisma.user.upsert({
       where: { email: c.email },
-      update: {},
+      update: { emailVerified: true },
       create: {
         name: c.name,
         email: c.email,
         passwordHash: await bcrypt.hash('Client@2024!', SALT),
         role: Role.CLIENT,
         profilePicture: `https://api.dicebear.com/7.x/initials/svg?seed=${c.seed}`,
+        emailVerified: true,
         clientProfile: { create: c.profile },
       },
     });

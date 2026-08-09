@@ -3,6 +3,9 @@ ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "emailVerified" BOOLEAN NOT NULL DEF
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "verificationToken" TEXT;
 ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "verificationTokenExpires" TIMESTAMP(3);
 
+-- Set all EXISTING users as already verified (they were created before email verification existed)
+UPDATE "User" SET "emailVerified" = true WHERE "emailVerified" = false;
+
 -- Add unique index on verificationToken
 CREATE UNIQUE INDEX IF NOT EXISTS "User_verificationToken_key" ON "User"("verificationToken");
 
