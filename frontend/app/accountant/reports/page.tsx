@@ -10,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { InvestoBarChart, InvestoPieChart } from "@/components/ui/charts";
 import { StatCard } from "@/components/ui/stat-card";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit, Withdrawal, Investment } from "@/types";
 
 export default function AccountantReportsPage() {
+  const t = useTranslations("admin.reports");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -46,18 +48,18 @@ export default function AccountantReportsPage() {
 
   function mockExport(format: string) {
     if (!canGenerate) {
-      toast.warning("You don't have permission to generate reports.");
+      toast.warning(t("noPermission"));
       return;
     }
-    toast.success(`Report exported as ${format} (mock — no actual file generated).`);
+    toast.success(t("exportMessage"));
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Platform activity summary</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
           {["PDF", "Excel", "CSV"].map((fmt) => (
@@ -71,12 +73,12 @@ export default function AccountantReportsPage() {
 
       {!canGenerate && (
         <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
-          You don&apos;t have permission to generate/export reports. Data is still visible.
+          {t("noPermission")} {t("contactAdmin")}
         </div>
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Total Clients" value={clientCount} icon={FileText} />
+        <StatCard title={t("tabClients")} value={clientCount} icon={FileText} />
         <StatCard title="Total Deposits (BIF)" value={formatCurrency(totalDepositAmount)} icon={FileText} />
         <StatCard title="Active Investments" value={activeInvestments.length} icon={FileText} />
         <StatCard title="Total Invested (BIF)" value={formatCurrency(totalInvested)} icon={FileText} />
@@ -84,7 +86,7 @@ export default function AccountantReportsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <CardHeader><CardTitle>Deposits by Investment Period</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("depositsByPeriod")}</CardTitle></CardHeader>
           <CardContent>
             <InvestoBarChart
               data={periodData}
@@ -95,7 +97,7 @@ export default function AccountantReportsPage() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Deposit Volume by Bank</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("depositsByBank")}</CardTitle></CardHeader>
           <CardContent>
             <InvestoPieChart
               data={bankData}
@@ -109,10 +111,10 @@ export default function AccountantReportsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Monthly Deposit Summary</CardTitle>
+            <CardTitle>{t("monthlyTrend")}</CardTitle>
             <Button variant="outline" size="sm" onClick={() => mockExport("CSV")} disabled={!canGenerate}>
               <Download className="h-4 w-4" />
-              Export
+              {t("exportCSV")}
             </Button>
           </div>
         </CardHeader>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getLocale } from "next-intl/server";
 import "./globals.css";
 import { ToastContainer } from "@/components/ui/toast";
 
@@ -11,12 +13,17 @@ export const metadata: Metadata = {
     "Investo is a secure, transparent investment management platform. Deposit, track, and grow your wealth with full visibility.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        {children}
-        <ToastContainer />
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <ToastContainer />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

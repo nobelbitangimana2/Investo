@@ -26,10 +26,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InvestoLineChart, InvestoBarChart, InvestoPieChart } from "@/components/ui/charts";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, timeAgo } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit, Withdrawal, Investment, User, Notification } from "@/types";
 
 export default function AdminDashboard() {
   const { user } = useAuthStore();
+  const t = useTranslations("admin.dashboard");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -60,14 +62,12 @@ export default function AdminDashboard() {
   const activeInvestments = investments.filter((i) => i.status === "active");
   const totalExpectedInterest = activeInvestments.reduce((s, i) => s + Number(i.expectedInterest), 0);
   const totalMaturityValue = activeInvestments.reduce((s, i) => s + Number(i.expectedMaturityValue), 0);
-  // Total balance = sum of all clients' currentPrincipal + accruedInterest across ALL investments
   const totalBalance = investments.reduce(
     (s, i) => s + Number(i.currentPrincipal) + Number(i.accruedInterest),
     0,
   );
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  // Growth trend chart (mock monthly data)
   const trendData = [
     { month: "Jan", deposits: 3, investments: 2, clients: 2 },
     { month: "Feb", deposits: 4, investments: 3, clients: 3 },
@@ -107,51 +107,51 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500 mt-0.5">Platform-wide overview</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5">{t("subtitle")}</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Total Clients" value={clients.length} icon={Users} />
+        <StatCard title={t("totalClients")} value={clients.length} icon={Users} />
         <StatCard
-          title="Total Deposited"
+          title={t("totalDeposited")}
           value={formatCurrency(totalDeposited)}
           icon={PiggyBank}
         />
         <StatCard
-          title="Total Balance"
+          title={t("totalBalance")}
           value={formatCurrency(totalBalance)}
           icon={Wallet}
           iconClassName="bg-emerald-50"
-          description="Principal + accrued interest"
+          description={t("balanceDescription")}
         />
         <StatCard
-          title="Active Investments"
+          title={t("activeInvestments")}
           value={activeInvestments.length}
           icon={TrendingUp}
           iconClassName="bg-blue-50"
         />
         <StatCard
-          title="Expected Interest"
+          title={t("expectedInterest")}
           value={formatCurrency(totalExpectedInterest)}
           icon={DollarSign}
           iconClassName="bg-amber-50"
         />
         <StatCard
-          title="Pending Deposits"
+          title={t("pendingDeposits")}
           value={deposits.filter((d) => d.status === "pending").length}
           icon={Clock}
           iconClassName="bg-amber-50"
         />
         <StatCard
-          title="Confirmed Deposits"
+          title={t("confirmedDeposits")}
           value={confirmedDeposits.length}
           icon={CheckCircle}
           iconClassName="bg-emerald-50"
         />
         <StatCard
-          title="Pending Withdrawals"
+          title={t("pendingWithdrawals")}
           value={withdrawals.filter((w) => w.status === "pending").length}
           icon={ArrowUpFromLine}
           iconClassName="bg-blue-50"
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              Notifications
+              {t("notifications")}
               {unreadCount > 0 && (
                 <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             {notifications.length === 0 ? (
-              <p className="px-6 py-4 text-sm text-gray-400">No notifications.</p>
+              <p className="px-6 py-4 text-sm text-gray-400">{t("noActiveInvestments")}</p>
             ) : (
               <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
                 {notifications.map((n) => (
@@ -207,16 +207,16 @@ export default function AdminDashboard() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Growth Trends (6 months)</CardTitle>
+              <CardTitle>{t("growthTrends")}</CardTitle>
             </CardHeader>
             <CardContent>
               <InvestoLineChart
                 data={trendData}
                 xKey="month"
                 lines={[
-                  { key: "deposits", label: "Deposits", color: "#0820ae" },
-                  { key: "investments", label: "Investments", color: "#10b981" },
-                  { key: "clients", label: "New Clients", color: "#f59e0b" },
+                  { key: "deposits", label: t("lineDeposits"), color: "#0820ae" },
+                  { key: "investments", label: t("lineInvestments"), color: "#10b981" },
+                  { key: "clients", label: t("lineClients"), color: "#f59e0b" },
                 ]}
               />
             </CardContent>
@@ -228,7 +228,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Investment Period Distribution</CardTitle>
+            <CardTitle>{t("periodDistribution")}</CardTitle>
           </CardHeader>
           <CardContent>
             <InvestoPieChart data={periodData} />
@@ -237,7 +237,7 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Deposit Volume by Bank (M BIF)</CardTitle>
+            <CardTitle>{t("depositByBank")}</CardTitle>
           </CardHeader>
           <CardContent>
             <InvestoBarChart
@@ -253,11 +253,11 @@ export default function AdminDashboard() {
       {/* Upcoming maturities */}
       <Card>
         <CardHeader>
-          <CardTitle>Upcoming Maturities</CardTitle>
+          <CardTitle>{t("upcomingMaturities")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {activeInvestments.length === 0 ? (
-            <p className="px-6 py-4 text-sm text-gray-400">No active investments.</p>
+            <p className="px-6 py-4 text-sm text-gray-400">{t("noActiveInvestments")}</p>
           ) : (
             <div className="divide-y divide-gray-50">
               {activeInvestments.slice(0, 5).map((inv) => (

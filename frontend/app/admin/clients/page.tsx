@@ -8,9 +8,11 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDate, getInitials } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { User, Deposit, Investment } from "@/types";
 
 export default function AdminClientsPage() {
+  const t = useTranslations("admin.clients");
   const [clients, setClients] = useState<User[]>([]);
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -47,8 +49,8 @@ export default function AdminClientsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">{clients.length} registered investors</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
       </div>
 
@@ -56,7 +58,7 @@ export default function AdminClientsPage() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           className="pl-9"
-          placeholder="Search clients by name or email..."
+          placeholder={t("searchPlaceholder")}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           aria-label="Search clients"
@@ -72,7 +74,7 @@ export default function AdminClientsPage() {
       ) : filtered.length === 0 ? (
         <div className="py-16 text-center text-gray-400">
           <Users className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p>No clients found</p>
+          <p>{t("noClients")}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -94,17 +96,17 @@ export default function AdminClientsPage() {
                     </div>
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div>
-                        <p className="text-xs text-gray-400">Deposited</p>
+                        <p className="text-xs text-gray-400">{t("totalInvested")}</p>
                         <p className="text-xs font-semibold text-gray-800 mt-0.5">
                           {(stats.totalDeposited / 1_000_000).toFixed(1)}M BIF
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Active</p>
+                        <p className="text-xs text-gray-400">{t("activeInvestments")}</p>
                         <p className="text-xs font-semibold text-gray-800 mt-0.5">{stats.activeInvestments} inv.</p>
                       </div>
                       <div>
-                        <p className="text-xs text-gray-400">Interest</p>
+                        <p className="text-xs text-gray-400">{t("expectedReturn")}</p>
                         <p className="text-xs font-semibold text-emerald-600 mt-0.5">
                           {(stats.expectedInterest / 1_000_000).toFixed(1)}M BIF
                         </p>

@@ -1,21 +1,9 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-
-/**
- * Lightweight middleware — primary auth logic is in the RouteGuard client component
- * (Zustand persisted auth). This middleware handles redirecting authenticated
- * users away from /login back to their dashboard.
- *
- * Deep role-checking happens client-side since auth state lives in localStorage.
- */
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // Let everything through at the middleware level.
-  // Client-side RouteGuard handles role-based redirects.
-  return NextResponse.next();
+// next-intl uses a cookie-based locale approach (no URL prefix needed)
+// The middleware is a passthrough — locale is resolved in i18n.ts from cookie
+export default function middleware() {
+  // No-op: locale switching is handled via cookie in i18n.ts
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ['/((?!_next|.*\\..*).*)'],
 };

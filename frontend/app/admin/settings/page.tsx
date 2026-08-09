@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { getInitials } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 export default function AdminSettingsPage() {
   const { user, updateUser } = useAuthStore();
+  const t = useTranslations("admin.settings");
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +37,7 @@ export default function AdminSettingsPage() {
     try {
       const res = await uploadAvatar(file);
       updateUser({ profilePicture: res.profilePicture });
-      toast.success("Profile picture updated.");
+      toast.success(t("avatarSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Upload failed.");
       setAvatarPreview(null);
@@ -46,12 +48,12 @@ export default function AdminSettingsPage() {
 
   async function handlePasswordChange() {
     setPwError(null);
-    if (newPw.length < 8) { setPwError("New password must be at least 8 characters."); return; }
-    if (newPw !== confirmPw) { setPwError("New passwords do not match."); return; }
+    if (newPw.length < 8) { setPwError(t("pwMin8")); return; }
+    if (newPw !== confirmPw) { setPwError(t("pwNoMatch")); return; }
     setPwLoading(true);
     try {
       await changePassword(currentPw, newPw);
-      toast.success("Password updated successfully.");
+      toast.success(t("pwSuccess"));
       setCurrentPw(""); setNewPw(""); setConfirmPw("");
     } catch (err) {
       setPwError(err instanceof Error ? err.message : "Failed to update password.");
@@ -64,13 +66,13 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
 
       {/* Profile Picture */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" /> Profile Picture
+            <User className="h-5 w-5" /> {t("profilePicture")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -107,7 +109,7 @@ export default function AdminSettingsPage() {
                 disabled={avatarUploading}
                 className="mt-2 text-xs font-medium text-navy-600 hover:underline disabled:opacity-50"
               >
-                {avatarUploading ? "Uploading…" : "Change photo"}
+                {avatarUploading ? "Uploading…" : t("changePhoto")}
               </button>
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
@@ -119,12 +121,12 @@ export default function AdminSettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" /> Change Password
+            <Lock className="h-5 w-5" /> {t("changePassword")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative">
-            <Input label="Current Password" type={showCurrent ? "text" : "password"} placeholder="••••••••"
+            <Input label={t("currentPassword")} type={showCurrent ? "text" : "password"} placeholder="••••••••"
               value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowCurrent(!showCurrent)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
@@ -132,7 +134,7 @@ export default function AdminSettingsPage() {
             </button>
           </div>
           <div className="relative">
-            <Input label="New Password" type={showNew ? "text" : "password"} placeholder="At least 8 characters"
+            <Input label={t("newPassword")} type={showNew ? "text" : "password"} placeholder={t("newPasswordPlaceholder")}
               value={newPw} onChange={(e) => setNewPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowNew(!showNew)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
@@ -140,7 +142,7 @@ export default function AdminSettingsPage() {
             </button>
           </div>
           <div className="relative">
-            <Input label="Confirm New Password" type={showConfirm ? "text" : "password"} placeholder="Repeat new password"
+            <Input label={t("confirmNewPassword")} type={showConfirm ? "text" : "password"} placeholder={t("confirmNewPasswordPlaceholder")}
               value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
@@ -152,7 +154,7 @@ export default function AdminSettingsPage() {
           )}
           <div className="flex justify-end">
             <Button type="button" loading={pwLoading} disabled={!currentPw || !newPw || !confirmPw} onClick={handlePasswordChange}>
-              Update Password
+              {t("updatePassword")}
             </Button>
           </div>
         </CardContent>

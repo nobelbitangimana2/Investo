@@ -2,14 +2,9 @@
 
 import { useEffect, useState } from "react";
 import {
-  PiggyBank,
-  TrendingUp,
-  Clock,
-  CheckCircle,
-  XCircle,
-  Wallet,
-  ArrowUpFromLine,
+  PiggyBank, TrendingUp, Clock, CheckCircle, XCircle, Wallet, ArrowUpFromLine,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/auth-store";
 import { getDeposits, getWithdrawals, getInvestments, getNotifications } from "@/lib/mock-api";
 import { StatCard } from "@/components/ui/stat-card";
@@ -20,6 +15,7 @@ import type { Deposit, Withdrawal, Investment, Notification } from "@/types";
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
+  const t = useTranslations("client.dashboard");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -68,70 +64,29 @@ export default function ClientDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 mt-0.5">Your investment overview</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Deposited"
-          value={formatCurrency(totalDeposited)}
-          icon={PiggyBank}
-        />
-        <StatCard
-          title="Current Balance"
-          value={formatCurrency(totalBalance)}
-          icon={Wallet}
-          iconClassName="bg-emerald-50"
-          description="Principal + accrued interest"
-        />
-        <StatCard
-          title="Expected Interest"
-          value={formatCurrency(totalExpectedInterest)}
-          icon={TrendingUp}
-          iconClassName="bg-amber-50"
-        />
-        <StatCard
-          title="Active Investments"
-          value={activeInvestments.length}
-          icon={CheckCircle}
-          iconClassName="bg-purple-50"
-        />
-        <StatCard
-          title="Pending Deposits"
-          value={deposits.filter((d) => d.status === "pending").length}
-          icon={Clock}
-          iconClassName="bg-amber-50"
-        />
-        <StatCard
-          title="Confirmed Deposits"
-          value={confirmedDeposits.length}
-          icon={CheckCircle}
-          iconClassName="bg-emerald-50"
-        />
-        <StatCard
-          title="Pending Withdrawals"
-          value={withdrawals.filter((w) => w.status === "pending").length}
-          icon={ArrowUpFromLine}
-          iconClassName="bg-blue-50"
-        />
-        <StatCard
-          title="Rejected Deposits"
-          value={deposits.filter((d) => d.status === "rejected").length}
-          icon={XCircle}
-          iconClassName="bg-red-50"
-        />
+        <StatCard title={t("totalDeposited")} value={formatCurrency(totalDeposited)} icon={PiggyBank} />
+        <StatCard title={t("currentBalance")} value={formatCurrency(totalBalance)} icon={Wallet}
+          iconClassName="bg-emerald-50" description={t("balanceDescription")} />
+        <StatCard title={t("expectedInterest")} value={formatCurrency(totalExpectedInterest)} icon={TrendingUp} iconClassName="bg-amber-50" />
+        <StatCard title={t("activeInvestments")} value={activeInvestments.length} icon={CheckCircle} iconClassName="bg-purple-50" />
+        <StatCard title={t("pendingDeposits")} value={deposits.filter((d) => d.status === "pending").length} icon={Clock} iconClassName="bg-amber-50" />
+        <StatCard title={t("confirmedDeposits")} value={confirmedDeposits.length} icon={CheckCircle} iconClassName="bg-emerald-50" />
+        <StatCard title={t("pendingWithdrawals")} value={withdrawals.filter((w) => w.status === "pending").length} icon={ArrowUpFromLine} iconClassName="bg-blue-50" />
+        <StatCard title={t("rejectedDeposits")} value={deposits.filter((d) => d.status === "rejected").length} icon={XCircle} iconClassName="bg-red-50" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Deposits */}
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Deposits</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("recentDeposits")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {deposits.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-gray-400">No deposits yet.</p>
+              <p className="px-6 pb-6 text-sm text-gray-400">{t("noDeposits")}</p>
             ) : (
               <div className="divide-y divide-gray-50">
                 {deposits.slice(0, 5).map((dep) => (
@@ -154,12 +109,10 @@ export default function ClientDashboard() {
 
         {/* Active Investments */}
         <Card>
-          <CardHeader>
-            <CardTitle>Active Investments</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("activeInvestmentsTitle")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {activeInvestments.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-gray-400">No active investments.</p>
+              <p className="px-6 pb-6 text-sm text-gray-400">{t("noActiveInvestments")}</p>
             ) : (
               <div className="divide-y divide-gray-50">
                 {activeInvestments.map((inv) => {
@@ -179,7 +132,7 @@ export default function ClientDashboard() {
                         <p className="text-xs font-semibold text-emerald-600">
                           {formatCurrency(balance)}
                         </p>
-                        <p className="text-[10px] text-gray-400">current balance</p>
+                        <p className="text-[10px] text-gray-400">{t("currentBalanceLabel")}</p>
                       </div>
                     </div>
                   );
@@ -191,12 +144,10 @@ export default function ClientDashboard() {
 
         {/* Recent Notifications */}
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Notifications</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("recentNotifications")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {notifications.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-gray-400">No notifications.</p>
+              <p className="px-6 pb-6 text-sm text-gray-400">{t("noNotifications")}</p>
             ) : (
               <div className="divide-y divide-gray-50">
                 {notifications.map((n) => (
@@ -222,12 +173,10 @@ export default function ClientDashboard() {
 
         {/* Recent Withdrawals */}
         <Card>
-          <CardHeader>
-            <CardTitle>Recent Withdrawals</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>{t("recentWithdrawals")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {withdrawals.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-gray-400">No withdrawals yet.</p>
+              <p className="px-6 pb-6 text-sm text-gray-400">{t("noWithdrawals")}</p>
             ) : (
               <div className="divide-y divide-gray-50">
                 {withdrawals.slice(0, 5).map((w) => (

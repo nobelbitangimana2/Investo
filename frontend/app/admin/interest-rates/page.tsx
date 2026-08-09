@@ -13,11 +13,13 @@ import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { InterestRate } from "@/types";
 
 const PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
 
 export default function AdminInterestRatesPage() {
+  const t = useTranslations("admin.interestRates");
   const [rates, setRates] = useState<InterestRate[]>([]);
   const [loading, setLoading] = useState(true);
   const [editTarget, setEditTarget] = useState<InterestRate | null>(null);
@@ -51,7 +53,7 @@ export default function AdminInterestRatesPage() {
         ? prev.map((r) => (r.investmentPeriod === updated.investmentPeriod ? updated : r))
         : [...prev, updated];
     });
-    toast.success(`Interest rate for "${data.investmentPeriod}" updated to ${data.ratePercentage}%.`);
+    toast.success(t("rateUpdated", { period: data.investmentPeriod, rate: data.ratePercentage }));
     setEditTarget(null);
     setShowAdd(false);
     reset();
@@ -61,22 +63,21 @@ export default function AdminInterestRatesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Interest Rates</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Manage investment period interest rates</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
         <Button onClick={() => { reset(); setShowAdd(true); }}>
-          <Pencil className="h-4 w-4" /> Add / Update Rate
+          <Pencil className="h-4 w-4" /> {t("addUpdate")}
         </Button>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Current Rates</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {["Period", "Rate (%)", "Last Updated", "Actions"].map((h) => (
+                  {[t("colPeriod"), t("colRate"), t("colLastUpdated"), t("colActions")].map((h) => (
                     <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">{h}</th>
                   ))}
                 </tr>
@@ -116,7 +117,7 @@ export default function AdminInterestRatesPage() {
       <Modal
         open={!!editTarget || showAdd}
         onClose={() => { setEditTarget(null); setShowAdd(false); reset(); }}
-        title={editTarget ? `Edit Rate — ${editTarget.investmentPeriod}` : "Add / Update Rate"}
+        title={editTarget ? t("editTitle", { period: editTarget.investmentPeriod }) : t("addTitle")}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {!editTarget && (
@@ -125,8 +126,8 @@ export default function AdminInterestRatesPage() {
               control={control}
               render={({ field }) => (
                 <Select
-                  label="Investment Period"
-                  placeholder="Select period"
+                  label={t("investmentPeriod")}
+                  placeholder={t("periodPlaceholder")}
                   options={PERIODS.map((p) => ({ value: p, label: p }))}
                   error={errors.investmentPeriod?.message}
                   {...field}
@@ -135,10 +136,10 @@ export default function AdminInterestRatesPage() {
             />
           )}
           <Input
-            label="Interest Rate (%)"
+            label={t("rateLabel")}
             type="number"
             step="0.1"
-            placeholder="e.g. 20"
+            placeholder={t("ratePlaceholder")}
             error={errors.ratePercentage?.message}
             {...register("ratePercentage", { valueAsNumber: true })}
           />
@@ -147,7 +148,7 @@ export default function AdminInterestRatesPage() {
               <X className="h-4 w-4" /> Cancel
             </Button>
             <Button type="submit" loading={isSubmitting}>
-              <Check className="h-4 w-4" /> Save Rate
+              <Check className="h-4 w-4" /> {t("saveRate")}
             </Button>
           </div>
         </form>

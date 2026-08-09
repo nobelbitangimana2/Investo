@@ -19,20 +19,24 @@ import { Modal } from "@/components/ui/modal";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useToast } from "@/hooks/useToast";
 import { getInitials, formatDate } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { User, AccountantPermissions } from "@/types";
 
 type PermKey = keyof Omit<AccountantPermissions, "userId">;
-const PERM_LABELS: [PermKey, string][] = [
-  ["viewDeposits", "View Deposits"],
-  ["viewWithdraws", "View Withdrawals"],
-  ["confirmDeposits", "Confirm Deposits"],
-  ["rejectDeposits", "Reject Deposits"],
-  ["confirmWithdraws", "Confirm Withdrawals"],
-  ["rejectWithdraws", "Reject Withdrawals"],
-  ["generateReports", "Generate Reports"],
-];
 
 export default function AdminAccountantsPage() {
+  const t = useTranslations("admin.accountants");
+
+  const PERM_LABELS: [PermKey, string][] = [
+    ["viewDeposits", t("permViewDeposits")],
+    ["viewWithdraws", t("permViewWithdrawals")],
+    ["confirmDeposits", t("permConfirmDeposits")],
+    ["rejectDeposits", t("permRejectDeposits")],
+    ["confirmWithdraws", t("permConfirmWithdrawals")],
+    ["rejectWithdraws", t("permRejectWithdrawals")],
+    ["generateReports", t("permGenerateReports")],
+  ];
+
   const [accountants, setAccountants] = useState<User[]>([]);
   const [permissions, setPermissions] = useState<Record<string, AccountantPermissions>>({});
   const [loading, setLoading] = useState(true);
@@ -65,7 +69,7 @@ export default function AdminAccountantsPage() {
 
   async function handleCreate(data: AccountantFormValues) {
     await createAccountant(data);
-    toast.success(`Accountant account created for ${data.name}.`);
+    toast.success(t("accountantCreated"));
     reset();
     setShowCreate(false);
     await loadData();
@@ -76,24 +80,25 @@ export default function AdminAccountantsPage() {
     if (!current) return;
     const updated = await updateAccountantPermissions(userId, { [key]: !current[key] });
     setPermissions((prev) => ({ ...prev, [userId]: updated }));
+    toast.success(t("permissionsUpdated"));
   }
 
   async function toggleStatus(acc: User) {
     const newStatus = acc.status === "active" ? "suspended" : "active";
     await updateUserStatus(acc.id, newStatus);
     setAccountants((prev) => prev.map((a) => (a.id === acc.id ? { ...a, status: newStatus } : a)));
-    toast.info(`Account ${newStatus === "active" ? "activated" : "suspended"}.`);
+    toast.info(newStatus === "active" ? t("accountActivated") : t("accountSuspended"));
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Accountants</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Manage accountant accounts and permissions</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
         <Button onClick={() => setShowCreate(true)}>
-          <Plus className="h-4 w-4" /> Add Accountant
+          <Plus className="h-4 w-4" /> {t("addAccountant")}
         </Button>
       </div>
 
@@ -104,7 +109,7 @@ export default function AdminAccountantsPage() {
       ) : accountants.length === 0 ? (
         <div className="py-16 text-center text-gray-400">
           <Shield className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p>No accountants yet.</p>
+          <p>{t("noAccountants")}</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -131,21 +136,21 @@ export default function AdminAccountantsPage() {
                         size="sm"
                         onClick={() => setEditingPerms(acc.id === editingPerms ? null : acc.id)}
                       >
-                        Permissions
+                        {t("permissions")}
                       </Button>
                       <Button
                         variant={acc.status === "active" ? "destructive" : "success"}
                         size="sm"
                         onClick={() => toggleStatus(acc)}
                       >
-                        {acc.status === "active" ? "Suspend" : "Activate"}
+                        {acc.status === "active" ? t("suspend") : t("activate")}
                       </Button>
                     </div>
                   </div>
 
                   {editingPerms === acc.id && perms && (
                     <div className="mt-5 pt-5 border-t border-gray-100">
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Permissions</p>
+                      <p className="text-sm font-semibold text-gray-700 mb-3">{t("permissions")}</p>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                         {PERM_LABELS.map(([key, label]) => (
                           <label
@@ -172,11 +177,11 @@ export default function AdminAccountantsPage() {
       )}
 
       {/* Create Modal */}
-      <Modal open={showCreate} onClose={() => { setShowCreate(false); reset(); }} title="Add Accountant">
+      <Modal open={showCreate} onClose={() => { setShowCreate(false); reset(); }} title={t("createTitle")}>
         <form onSubmit={handleSubmit(handleCreate)} className="space-y-4" noValidate>
-          <Input label="Full Name" placeholder="Grace Iradukunda" error={errors.name?.message} {...register("name")} />
-          <Input label="Email" type="email" placeholder="grace@investo.bi" error={errors.email?.message} {...register("email")} />
-          <Input label="Password" type="password" placeholder="Min. 8 characters" error={errors.password?.message} {...register("password")} />
+          <Input label={t("name")} placeholder="Grace Iradukunda" error={errors.name?.message} {...register("name")} />
+          <Input label={t("email")} type="email" placeholder="grace@investo.bi" error={errors.email?.message} {...register("email")} />
+          <Input label={t("password")} type="password" placeholder="Min. 8 characters" error={errors.password?.message} {...register("password")} />
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" onClick={() => { setShowCreate(false); reset(); }}>Cancel</Button>
             <Button type="submit" loading={isSubmitting}>Create Account</Button>

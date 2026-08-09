@@ -12,10 +12,12 @@ import { ConfirmRejectModal } from "@/components/ui/confirm-reject-modal";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit } from "@/types";
 
 export default function AccountantDepositsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("accountant.deposits");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionTarget, setActionTarget] = useState<{ deposit: Deposit; action: "confirm" | "reject" } | null>(null);
@@ -35,11 +37,11 @@ export default function AccountantDepositsPage() {
     if (action === "confirm") {
       const updated = await confirmDeposit(deposit.id, user.id);
       setDeposits((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-      toast.success("Deposit confirmed successfully.");
+      toast.success(t("depositConfirmed"));
     } else {
       const updated = await rejectDeposit(deposit.id, user.id, note ?? "");
       setDeposits((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-      toast.success("Deposit rejected.");
+      toast.success(t("depositRejected"));
     }
   }
 
@@ -98,13 +100,13 @@ export default function AccountantDepositsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Deposits</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">Review and manage client deposits</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
       </div>
 
       {!canConfirm && !canReject && (
         <div className="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-700">
-          You have view-only access. Contact an admin to enable confirm/reject permissions.
+          {t("viewOnly")}
         </div>
       )}
 
@@ -113,7 +115,7 @@ export default function AccountantDepositsPage() {
         columns={columns}
         loading={loading}
         searchable
-        searchPlaceholder="Search by name, bank, reference..."
+        searchPlaceholder={t("searchPlaceholder")}
         searchKeys={["fullName", "bank", "referenceNumber", "status"]}
       />
 
@@ -130,7 +132,6 @@ export default function AccountantDepositsPage() {
       {viewTarget && (
         <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title="Deposit Details">
           <div className="space-y-4 text-sm">
-            {/* Receipt image */}
             {viewTarget.receiptUrl && (
               <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                 <p className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-200">

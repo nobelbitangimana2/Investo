@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { timeAgo } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Notification } from "@/types";
 
 const typeColors: Record<string, string> = {
@@ -19,6 +20,7 @@ const typeColors: Record<string, string> = {
 
 export default function ClientNotificationsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("client.notifications");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,15 +48,15 @@ export default function ClientNotificationsPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
           <p className="text-gray-500 mt-0.5 text-sm">
-            {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+            {unreadCount > 0 ? t("unread", { count: unreadCount }) : t("allCaughtUp")}
           </p>
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" onClick={handleMarkAll}>
             <CheckCheck className="h-4 w-4" />
-            Mark all read
+            {t("markAllRead")}
           </Button>
         )}
       </div>
@@ -68,7 +70,7 @@ export default function ClientNotificationsPage() {
       ) : notifications.length === 0 ? (
         <Card className="py-16 text-center">
           <Bell className="h-10 w-10 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-400 font-medium">No notifications yet</p>
+          <p className="text-gray-400 font-medium">{t("noNotifications")}</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -99,7 +101,7 @@ export default function ClientNotificationsPage() {
                   onClick={() => handleMarkRead(n.id)}
                   className="text-xs text-navy-600 hover:underline flex-shrink-0"
                 >
-                  Mark read
+                  {t("markRead")}
                 </button>
               )}
             </div>

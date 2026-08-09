@@ -6,6 +6,7 @@ import { getAuditLogs } from "@/lib/mock-api";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { AuditLogEntry } from "@/types";
 
 const roleColors: Record<string, "default" | "info" | "success" | "warning"> = {
@@ -25,6 +26,7 @@ const actionColors: Record<string, string> = {
 };
 
 export default function AdminAuditLogsPage() {
+  const t = useTranslations("admin.auditLogs");
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,7 +37,7 @@ export default function AdminAuditLogsPage() {
   const columns: Column<AuditLogEntry>[] = [
     {
       key: "timestamp",
-      header: "Timestamp",
+      header: t("colTimestamp"),
       sortable: true,
       cell: (r) => (
         <span className="text-xs text-gray-500 whitespace-nowrap">{formatDateTime(r.timestamp)}</span>
@@ -43,7 +45,7 @@ export default function AdminAuditLogsPage() {
     },
     {
       key: "userName",
-      header: "User",
+      header: t("colUser"),
       sortable: true,
       cell: (r) => (
         <div>
@@ -56,7 +58,7 @@ export default function AdminAuditLogsPage() {
     },
     {
       key: "action",
-      header: "Action",
+      header: t("colAction"),
       sortable: true,
       cell: (r) => (
         <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold ${actionColors[r.action] ?? "text-gray-700 bg-gray-100"}`}>
@@ -66,7 +68,7 @@ export default function AdminAuditLogsPage() {
     },
     {
       key: "details",
-      header: "Details",
+      header: t("colDetails"),
       cell: (r) => (
         <span className="text-sm text-gray-600 max-w-xs block" title={r.details}>
           {r.details.length > 80 ? r.details.slice(0, 80) + "…" : r.details}
@@ -75,7 +77,7 @@ export default function AdminAuditLogsPage() {
     },
     {
       key: "targetType",
-      header: "Target",
+      header: t("colRole"),
       cell: (r) => r.targetType ? (
         <span className="text-xs text-gray-400 capitalize">{r.targetType}</span>
       ) : <span className="text-gray-200">—</span>,
@@ -85,8 +87,8 @@ export default function AdminAuditLogsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">Complete record of all administrative actions</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
       </div>
 
       {logs.length === 0 && !loading ? (
@@ -100,7 +102,7 @@ export default function AdminAuditLogsPage() {
           columns={columns}
           loading={loading}
           searchable
-          searchPlaceholder="Search by user, action, or details..."
+          searchPlaceholder={t("searchPlaceholder")}
           searchKeys={["userName", "action", "details", "userRole"]}
           pageSize={15}
         />

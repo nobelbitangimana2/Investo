@@ -10,9 +10,11 @@ import { ConfirmRejectModal } from "@/components/ui/confirm-reject-modal";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Withdrawal } from "@/types";
 
 export default function AdminWithdrawalsPage() {
+  const t = useTranslations("admin.withdrawals");
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionTarget, setActionTarget] = useState<{ w: Withdrawal; action: "confirm" | "reject" } | null>(null);
@@ -29,11 +31,11 @@ export default function AdminWithdrawalsPage() {
     if (action === "confirm") {
       const updated = await confirmWithdrawal(w.id);
       setWithdrawals((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-      toast.success("Withdrawal confirmed.");
+      toast.success(t("withdrawalConfirmed"));
     } else {
       const updated = await rejectWithdrawal(w.id, note ?? "");
       setWithdrawals((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-      toast.success("Withdrawal rejected.");
+      toast.success(t("withdrawalRejected"));
     }
   }
 
@@ -71,11 +73,11 @@ export default function AdminWithdrawalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Withdrawal Management</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">All client withdrawal requests</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
       </div>
       <DataTable data={withdrawals} columns={columns} loading={loading} searchable
-        searchPlaceholder="Search withdrawals..." searchKeys={["fullName", "bankToTransferTo", "recipientName", "status"]} />
+        searchPlaceholder={t("searchPlaceholder")} searchKeys={["fullName", "bankToTransferTo", "recipientName", "status"]} />
       {actionTarget && (
         <ConfirmRejectModal open={!!actionTarget} onClose={() => setActionTarget(null)}
           action={actionTarget.action}
@@ -83,16 +85,16 @@ export default function AdminWithdrawalsPage() {
           onConfirm={handleAction} />
       )}
       {viewTarget && (
-        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title="Withdrawal Details">
+        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title={t("detailTitle")}>
           <div className="space-y-4 text-sm">
             <div className="space-y-3">
               {([
-                ["Client", viewTarget.fullName], ["Bank", viewTarget.bankToTransferTo],
-                ["Account", viewTarget.accountNumber], ["Recipient", viewTarget.recipientName],
-                ["Amount", formatCurrency(viewTarget.amount)], ["Status", viewTarget.status],
-                ["Requested", formatDateTime(viewTarget.requestedAt)],
-                viewTarget.confirmedAt ? ["Processed", formatDateTime(viewTarget.confirmedAt)] : null,
-                viewTarget.rejectionNote ? ["Rejection Note", viewTarget.rejectionNote] : null,
+                [t("fieldClient"), viewTarget.fullName], [t("fieldBank"), viewTarget.bankToTransferTo],
+                [t("fieldAccount"), viewTarget.accountNumber], [t("fieldRecipient"), viewTarget.recipientName],
+                [t("fieldAmount"), formatCurrency(viewTarget.amount)], [t("fieldStatus"), viewTarget.status],
+                [t("fieldRequested"), formatDateTime(viewTarget.requestedAt)],
+                viewTarget.confirmedAt ? [t("fieldProcessed"), formatDateTime(viewTarget.confirmedAt)] : null,
+                viewTarget.rejectionNote ? [t("fieldRejectionNote"), viewTarget.rejectionNote] : null,
               ] as ([string, string] | null)[]).filter((x): x is [string, string] => x !== null).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <span className="text-gray-400">{k}</span>
@@ -100,13 +102,12 @@ export default function AdminWithdrawalsPage() {
                 </div>
               ))}
             </div>
-            {/* Withdrawal rules note */}
             <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-700 space-y-1">
-              <p className="font-semibold text-blue-800">Processing rules (applied by backend)</p>
+              <p className="font-semibold text-blue-800">{t("processingRules")}</p>
               <ul className="list-disc list-inside space-y-0.5">
-                <li>Accrued interest is deducted first, then principal.</li>
-                <li>If multiple investments exist, the amount is split proportionally by current value.</li>
-                <li>Future interest recalculates only on remaining principal.</li>
+                <li>{t("ruleInterestFirst")}</li>
+                <li>{t("ruleProportional")}</li>
+                <li>{t("ruleFutureCalc")}</li>
               </ul>
             </div>
           </div>

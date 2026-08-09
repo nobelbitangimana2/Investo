@@ -12,11 +12,13 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { InvestoBarChart, InvestoPieChart, InvestoLineChart } from "@/components/ui/charts";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { PiggyBank, TrendingUp, Users, DollarSign } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Deposit, Investment, User } from "@/types";
 
 type ReportTab = "deposits" | "investments" | "clients";
 
 export default function AdminReportsPage() {
+  const t = useTranslations("admin.reports");
   const [tab, setTab] = useState<ReportTab>("deposits");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -32,7 +34,7 @@ export default function AdminReportsPage() {
   }, []);
 
   function mockExport(format: string) {
-    toast.success(`Exporting ${tab} report as ${format} — mock action.`);
+    toast.success(t("exportMessage"));
   }
 
   const confirmedDeposits = deposits.filter((d) => d.status === "confirmed");
@@ -74,25 +76,35 @@ export default function AdminReportsPage() {
     { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
   ];
 
+  const tabLabels: Record<ReportTab, string> = {
+    deposits: t("tabDeposits"),
+    investments: t("tabInvestments"),
+    clients: t("tabClients"),
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">Comprehensive platform analytics</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
-          {["PDF", "Excel", "CSV"].map((fmt) => (
-            <Button key={fmt} variant="outline" size="sm" onClick={() => mockExport(fmt)}>
-              <Download className="h-4 w-4" /> {fmt}
-            </Button>
-          ))}
+          <Button variant="outline" size="sm" onClick={() => mockExport("PDF")}>
+            <Download className="h-4 w-4" /> {t("exportPDF")}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => mockExport("Excel")}>
+            <Download className="h-4 w-4" /> {t("exportExcel")}
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => mockExport("CSV")}>
+            <Download className="h-4 w-4" /> {t("exportCSV")}
+          </Button>
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <StatCard title="Total Clients" value={clients.length} icon={Users} />
+        <StatCard title={t("tabClients")} value={clients.length} icon={Users} />
         <StatCard title="Total Deposited" value={formatCurrency(totalDeposited)} icon={PiggyBank} />
         <StatCard title="Expected Interest" value={formatCurrency(totalExpectedInterest)} icon={DollarSign} iconClassName="bg-amber-50" />
         <StatCard title="Total Maturity Value" value={formatCurrency(totalMaturityValue)} icon={TrendingUp} iconClassName="bg-emerald-50" />
@@ -100,17 +112,17 @@ export default function AdminReportsPage() {
 
       {/* Tab Nav */}
       <div className="flex gap-1 border-b border-gray-200">
-        {(["deposits", "investments", "clients"] as ReportTab[]).map((t) => (
+        {(["deposits", "investments", "clients"] as ReportTab[]).map((tabKey) => (
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors capitalize ${
-              tab === t
+            key={tabKey}
+            onClick={() => setTab(tabKey)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+              tab === tabKey
                 ? "border-navy-700 text-navy-700"
                 : "border-transparent text-gray-500 hover:text-gray-700"
             }`}
           >
-            {t}
+            {tabLabels[tabKey]}
           </button>
         ))}
       </div>
@@ -119,7 +131,7 @@ export default function AdminReportsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle>Monthly Deposit Volume</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t("monthlyTrend")}</CardTitle></CardHeader>
               <CardContent>
                 <InvestoBarChart
                   data={monthlyDeposits}
@@ -149,11 +161,11 @@ export default function AdminReportsPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
-              <CardHeader><CardTitle>Period Distribution</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t("investmentsByPeriod")}</CardTitle></CardHeader>
               <CardContent><InvestoPieChart data={periodData} /></CardContent>
             </Card>
             <Card>
-              <CardHeader><CardTitle>Active vs Matured</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t("investmentsByStatus")}</CardTitle></CardHeader>
               <CardContent>
                 <InvestoPieChart
                   data={[
@@ -172,7 +184,7 @@ export default function AdminReportsPage() {
       {tab === "clients" && (
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Client List</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("topInvestors")}</CardTitle></CardHeader>
             <CardContent className="p-0">
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-100">

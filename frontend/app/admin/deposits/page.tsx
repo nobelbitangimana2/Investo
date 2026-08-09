@@ -11,10 +11,12 @@ import { ConfirmRejectModal } from "@/components/ui/confirm-reject-modal";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit } from "@/types";
 
 export default function AdminDepositsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("admin.deposits");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionTarget, setActionTarget] = useState<{ deposit: Deposit; action: "confirm" | "reject" } | null>(null);
@@ -31,11 +33,11 @@ export default function AdminDepositsPage() {
     if (action === "confirm") {
       const updated = await confirmDeposit(deposit.id, user.id);
       setDeposits((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-      toast.success("Deposit confirmed.");
+      toast.success(t("depositConfirmed"));
     } else {
       const updated = await rejectDeposit(deposit.id, user.id, note ?? "");
       setDeposits((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
-      toast.success("Deposit rejected.");
+      toast.success(t("depositRejected"));
     }
   }
 
@@ -73,11 +75,11 @@ export default function AdminDepositsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Deposit Management</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">All client deposits across the platform</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
       </div>
       <DataTable data={deposits} columns={columns} loading={loading} searchable
-        searchPlaceholder="Search deposits..." searchKeys={["fullName", "bank", "referenceNumber", "status"]} />
+        searchPlaceholder={t("searchPlaceholder")} searchKeys={["fullName", "bank", "referenceNumber", "status"]} />
       {actionTarget && (
         <ConfirmRejectModal open={!!actionTarget} onClose={() => setActionTarget(null)}
           action={actionTarget.action}
@@ -85,13 +87,12 @@ export default function AdminDepositsPage() {
           onConfirm={handleAction} />
       )}
       {viewTarget && (
-        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title="Deposit Details">
+        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title={t("detailTitle")}>
           <div className="space-y-4 text-sm">
-            {/* Receipt image */}
             {viewTarget.receiptUrl && (
               <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                 <p className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-200">
-                  Deposit Receipt
+                  {t("receiptLabel")}
                 </p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -106,13 +107,13 @@ export default function AdminDepositsPage() {
             )}
             <div className="space-y-3">
               {([
-                ["Client", viewTarget.fullName], ["Bank", viewTarget.bank],
-                ["Account", viewTarget.accountNumber], ["Amount", formatCurrency(viewTarget.amount)],
-                ["Date", formatDate(viewTarget.depositDate)], ["Reference", viewTarget.referenceNumber],
-                ["Period", viewTarget.investmentPeriod], ["Status", viewTarget.status],
-                ["Submitted", formatDateTime(viewTarget.submittedAt)],
-                viewTarget.verifiedAt ? ["Verified", formatDateTime(viewTarget.verifiedAt)] : null,
-                viewTarget.rejectionNote ? ["Rejection Note", viewTarget.rejectionNote] : null,
+                [t("fieldClient"), viewTarget.fullName], [t("fieldBank"), viewTarget.bank],
+                [t("fieldAccount"), viewTarget.accountNumber], [t("fieldAmount"), formatCurrency(viewTarget.amount)],
+                [t("fieldDate"), formatDate(viewTarget.depositDate)], [t("fieldReference"), viewTarget.referenceNumber],
+                [t("fieldPeriod"), viewTarget.investmentPeriod], [t("fieldStatus"), viewTarget.status],
+                [t("fieldSubmitted"), formatDateTime(viewTarget.submittedAt)],
+                viewTarget.verifiedAt ? [t("fieldVerified"), formatDateTime(viewTarget.verifiedAt)] : null,
+                viewTarget.rejectionNote ? [t("fieldRejectionNote"), viewTarget.rejectionNote] : null,
               ] as ([string, string] | null)[]).filter((x): x is [string, string] => x !== null).map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4">
                   <span className="text-gray-400">{k}</span>

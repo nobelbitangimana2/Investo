@@ -12,10 +12,12 @@ import { ConfirmRejectModal } from "@/components/ui/confirm-reject-modal";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Withdrawal } from "@/types";
 
 export default function AccountantWithdrawalsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("accountant.withdrawals");
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionTarget, setActionTarget] = useState<{ w: Withdrawal; action: "confirm" | "reject" } | null>(null);
@@ -34,11 +36,11 @@ export default function AccountantWithdrawalsPage() {
     if (action === "confirm") {
       const updated = await confirmWithdrawal(w.id);
       setWithdrawals((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-      toast.success("Withdrawal confirmed.");
+      toast.success(t("withdrawalConfirmed"));
     } else {
       const updated = await rejectWithdrawal(w.id, note ?? "");
       setWithdrawals((prev) => prev.map((x) => (x.id === updated.id ? updated : x)));
-      toast.success("Withdrawal rejected.");
+      toast.success(t("withdrawalRejected"));
     }
   }
 
@@ -95,8 +97,8 @@ export default function AccountantWithdrawalsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Withdrawals</h1>
-        <p className="text-gray-500 mt-0.5 text-sm">Review and manage client withdrawal requests</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
       </div>
 
       <DataTable
@@ -104,7 +106,7 @@ export default function AccountantWithdrawalsPage() {
         columns={columns}
         loading={loading}
         searchable
-        searchPlaceholder="Search by name, bank..."
+        searchPlaceholder={t("searchPlaceholder")}
         searchKeys={["fullName", "bankToTransferTo", "recipientName", "status"]}
       />
 
@@ -139,7 +141,6 @@ export default function AccountantWithdrawalsPage() {
                 </div>
               ))}
             </div>
-            {/* Withdrawal rules note */}
             <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-700 space-y-1">
               <p className="font-semibold text-blue-800">Processing rules (applied by backend)</p>
               <ul className="list-disc list-inside space-y-0.5">

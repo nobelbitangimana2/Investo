@@ -17,9 +17,9 @@ import {
   RefreshCw,
   ArrowUpFromLine,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Investment, Withdrawal } from "@/types";
 
-// ── How many full cycles have completed for an investment ─────────────────
 function getPeriodDays(period: string): number {
   const map: Record<string, number> = {
     Weekly: 7,
@@ -40,13 +40,13 @@ function getCompletedCycles(inv: Investment): number {
   return Math.floor(elapsedDays / periodDays);
 }
 
-// Expected interest per cycle based on current principal
 function getExpectedInterestPerCycle(inv: Investment): number {
   return Number(inv.currentPrincipal) * (Number(inv.interestRate) / 100);
 }
 
 export default function ClientInvestmentsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("client.investments");
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,8 +68,6 @@ export default function ClientInvestmentsPage() {
     0,
   );
 
-  // Expected interest = sum across ALL investments of (currentPrincipal * rate)
-  // This updates automatically after deposits/withdrawals change the principal
   const totalExpectedInterest = investments.reduce(
     (s, inv) => s + getExpectedInterestPerCycle(inv),
     0,
@@ -108,9 +106,11 @@ export default function ClientInvestmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">My Investments</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
         <p className="text-gray-500 mt-0.5 text-sm">
-          {investments.length} investment{investments.length !== 1 ? "s" : ""}
+          {investments.length !== 1
+            ? t("subtitlePlural", { count: investments.length })
+            : t("subtitle", { count: investments.length })}
         </p>
       </div>
 
@@ -118,20 +118,11 @@ export default function ClientInvestmentsPage() {
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 flex gap-3">
         <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
         <div className="space-y-1 text-sm text-blue-800">
-          <p className="font-semibold">How your investments work</p>
+          <p className="font-semibold">{t("howItWorksTitle")}</p>
           <ul className="list-disc list-inside space-y-0.5 text-blue-700 text-xs">
-            <li>
-              Investments are <strong>perpetual</strong> — they keep running after each cycle ends
-              until you withdraw all your money.
-            </li>
-            <li>
-              <strong>Expected interest</strong> is calculated on your current principal each cycle
-              and updates whenever you deposit or withdraw.
-            </li>
-            <li>
-              Withdrawals deduct interest first, then principal. Future interest is based on the
-              remaining principal.
-            </li>
+            <li>{t("rulePerp")}</li>
+            <li>{t("ruleExpected")}</li>
+            <li>{t("ruleWithdrawal")}</li>
           </ul>
         </div>
       </div>
@@ -139,8 +130,8 @@ export default function ClientInvestmentsPage() {
       {investments.length === 0 ? (
         <div className="rounded-xl border-2 border-dashed border-gray-200 py-16 text-center text-gray-400">
           <TrendingUp className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">No investments yet</p>
-          <p className="text-sm mt-1">Submit a deposit to start your investment journey</p>
+          <p className="font-medium">{t("noInvestments")}</p>
+          <p className="text-sm mt-1">{t("noInvestmentsSubtitle")}</p>
         </div>
       ) : (
         <>
@@ -148,27 +139,27 @@ export default function ClientInvestmentsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="bg-navy-600 text-white border-0">
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-white/70">Total Balance</p>
+                <p className="text-xs font-medium text-white/70">{t("totalBalance")}</p>
                 <p className="mt-1 text-2xl font-bold">{formatCurrency(totalBalance)}</p>
-                <p className="text-[11px] text-white/60 mt-0.5">Principal + accrued interest</p>
+                <p className="text-[11px] text-white/60 mt-0.5">{t("principalAccrued")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-gray-500">Total Principal</p>
+                <p className="text-xs font-medium text-gray-500">{t("totalPrincipal")}</p>
                 <p className="mt-1 text-2xl font-bold text-gray-900">
                   {formatCurrency(investments.reduce((s, i) => s + Number(i.currentPrincipal), 0))}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Remaining capital</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{t("remainingCapital")}</p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="p-5">
-                <p className="text-xs font-medium text-gray-500">Expected Interest / Cycle</p>
+                <p className="text-xs font-medium text-gray-500">{t("expectedInterestCycle")}</p>
                 <p className="mt-1 text-2xl font-bold text-emerald-600">
                   {formatCurrency(totalExpectedInterest)}
                 </p>
-                <p className="text-[11px] text-gray-400 mt-0.5">Updates with each deposit/withdrawal</p>
+                <p className="text-[11px] text-gray-400 mt-0.5">{t("updatesWithDeposit")}</p>
               </CardContent>
             </Card>
           </div>
@@ -188,7 +179,7 @@ export default function ClientInvestmentsPage() {
                           {formatCurrency(Number(inv.amount))}
                         </p>
                         <p className="text-sm text-gray-500 mt-0.5">
-                          {inv.investmentPeriod} · Perpetual Investment
+                          {inv.investmentPeriod} · {t("perpetual")}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -196,7 +187,9 @@ export default function ClientInvestmentsPage() {
                         {cycles > 0 && (
                           <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
                             <RefreshCw className="h-3 w-3" />
-                            {cycles} cycle{cycles !== 1 ? "s" : ""} completed
+                            {cycles !== 1
+                              ? t("cyclesCompletedPlural", { count: cycles })
+                              : t("cyclesCompleted", { count: cycles })}
                           </span>
                         )}
                       </div>
@@ -207,7 +200,7 @@ export default function ClientInvestmentsPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <PiggyBank className="h-3.5 w-3.5" />
-                          Current Principal
+                          {t("currentPrincipal")}
                         </span>
                         <span className="font-semibold text-gray-800">
                           {formatCurrency(Number(inv.currentPrincipal))}
@@ -216,14 +209,14 @@ export default function ClientInvestmentsPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                          Accrued Interest
+                          {t("accruedInterest")}
                         </span>
                         <span className="font-semibold text-emerald-600">
                           +{formatCurrency(Number(inv.accruedInterest))}
                         </span>
                       </div>
                       <div className="pt-1.5 border-t border-gray-200 flex justify-between text-sm">
-                        <span className="font-medium text-gray-700">Current Balance</span>
+                        <span className="font-medium text-gray-700">{t("currentBalance")}</span>
                         <span className="font-bold text-gray-900">{formatCurrency(balance)}</span>
                       </div>
                     </div>
@@ -234,7 +227,7 @@ export default function ClientInvestmentsPage() {
                           <Percent className="h-4 w-4 text-amber-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Interest Rate</p>
+                          <p className="text-xs text-gray-400">{t("interestRate")}</p>
                           <p className="text-sm font-semibold text-gray-800">
                             {inv.interestRate}%
                           </p>
@@ -245,7 +238,7 @@ export default function ClientInvestmentsPage() {
                           <DollarSign className="h-4 w-4 text-emerald-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Expected / Cycle</p>
+                          <p className="text-xs text-gray-400">{t("expectedPerCycle")}</p>
                           <p className="text-sm font-semibold text-emerald-700">
                             {formatCurrency(expectedPerCycle)}
                           </p>
@@ -256,7 +249,7 @@ export default function ClientInvestmentsPage() {
                           <Calendar className="h-4 w-4 text-blue-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Started</p>
+                          <p className="text-xs text-gray-400">{t("started")}</p>
                           <p className="text-sm font-semibold text-gray-800">
                             {formatDate(inv.confirmationDate)}
                           </p>
@@ -267,7 +260,7 @@ export default function ClientInvestmentsPage() {
                           <RefreshCw className="h-4 w-4 text-purple-600" />
                         </div>
                         <div>
-                          <p className="text-xs text-gray-400">Cycles Done</p>
+                          <p className="text-xs text-gray-400">{t("cyclesDone")}</p>
                           <p className="text-sm font-semibold text-gray-800">
                             {cycles}
                           </p>
@@ -285,12 +278,12 @@ export default function ClientInvestmentsPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ArrowUpFromLine className="h-5 w-5 text-gray-600" />
-                Withdrawal History
+                {t("withdrawalHistory")}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {withdrawals.length === 0 ? (
-                <p className="text-sm text-gray-400 py-4 text-center">No withdrawals yet.</p>
+                <p className="text-sm text-gray-400 py-4 text-center">{t("noWithdrawals")}</p>
               ) : (
                 <DataTable
                   data={withdrawals}

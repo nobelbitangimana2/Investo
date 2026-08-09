@@ -16,10 +16,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { InvestoBarChart } from "@/components/ui/charts";
 import { formatCurrency, formatDate, timeAgo } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit, Withdrawal, Notification } from "@/types";
 
 export default function AccountantDashboard() {
   const { user } = useAuthStore();
+  const t = useTranslations("accountant.dashboard");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -39,7 +41,6 @@ export default function AccountantDashboard() {
     });
   }, [user]);
 
-  // Weekly activity chart — stable mock so it doesn't re-randomise on each render
   const activityData = [
     { day: "Mon", deposits: 2, withdrawals: 1 },
     { day: "Tue", deposits: 3, withdrawals: 0 },
@@ -71,31 +72,31 @@ export default function AccountantDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Accountant Dashboard</h1>
-        <p className="text-gray-500 mt-0.5">Today&apos;s overview</p>
+        <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+        <p className="text-gray-500 mt-0.5">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
-          title="Pending Deposits"
+          title={t("pendingDeposits")}
           value={pending.length}
           icon={Clock}
           iconClassName="bg-amber-50"
         />
         <StatCard
-          title="Pending Withdrawals"
+          title={t("pendingWithdrawals")}
           value={pendingWithdrawals.length}
           icon={ArrowUpFromLine}
           iconClassName="bg-blue-50"
         />
         <StatCard
-          title="Confirmed Deposits"
+          title={t("confirmedDeposits")}
           value={recentlyConfirmed.length}
           icon={CheckCircle}
           iconClassName="bg-emerald-50"
         />
         <StatCard
-          title="Rejected Deposits"
+          title={t("rejectedDeposits")}
           value={recentlyRejected.length}
           icon={XCircle}
           iconClassName="bg-red-50"
@@ -107,15 +108,15 @@ export default function AccountantDashboard() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Weekly Activity</CardTitle>
+              <CardTitle>{t("weeklyActivity")}</CardTitle>
             </CardHeader>
             <CardContent>
               <InvestoBarChart
                 data={activityData}
                 xKey="day"
                 bars={[
-                  { key: "deposits", label: "Deposits", color: "#0820ae" },
-                  { key: "withdrawals", label: "Withdrawals", color: "#10b981" },
+                  { key: "deposits", label: t("barDeposits"), color: "#0820ae" },
+                  { key: "withdrawals", label: t("barWithdrawals"), color: "#10b981" },
                 ]}
               />
             </CardContent>
@@ -127,7 +128,7 @@ export default function AccountantDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
-              Notifications
+              {t("notifications")}
               {unreadCount > 0 && (
                 <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {unreadCount > 9 ? "9+" : unreadCount}
@@ -137,7 +138,7 @@ export default function AccountantDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             {notifications.length === 0 ? (
-              <p className="px-6 py-4 text-sm text-gray-400">No notifications.</p>
+              <p className="px-6 py-4 text-sm text-gray-400">{t("noPendingDeposits")}</p>
             ) : (
               <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
                 {notifications.map((n) => (
@@ -174,11 +175,11 @@ export default function AccountantDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Pending Queue</CardTitle>
+            <CardTitle>{t("pendingQueue")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {pending.length === 0 ? (
-              <p className="px-6 py-4 text-sm text-gray-400">No pending deposits.</p>
+              <p className="px-6 py-4 text-sm text-gray-400">{t("noPendingDeposits")}</p>
             ) : (
               pending.slice(0, 5).map((d) => (
                 <div
@@ -200,11 +201,11 @@ export default function AccountantDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recently Confirmed</CardTitle>
+            <CardTitle>{t("recentlyConfirmed")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {recentlyConfirmed.length === 0 ? (
-              <p className="px-6 py-4 text-sm text-gray-400">No confirmed deposits.</p>
+              <p className="px-6 py-4 text-sm text-gray-400">{t("noConfirmedDeposits")}</p>
             ) : (
               recentlyConfirmed.map((d) => (
                 <div
@@ -226,11 +227,11 @@ export default function AccountantDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recently Rejected</CardTitle>
+            <CardTitle>{t("recentlyRejected")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {recentlyRejected.length === 0 ? (
-              <p className="px-6 py-4 text-sm text-gray-400">No rejections.</p>
+              <p className="px-6 py-4 text-sm text-gray-400">{t("noRejections")}</p>
             ) : (
               recentlyRejected.map((d) => (
                 <div

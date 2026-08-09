@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { timeAgo } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Notification } from "@/types";
 
 const typeConfig: Record<string, { color: string; icon: React.ReactNode; route: string }> = {
@@ -37,6 +38,7 @@ const typeConfig: Record<string, { color: string; icon: React.ReactNode; route: 
 export default function AdminNotificationsPage() {
   const { user } = useAuthStore();
   const router = useRouter();
+  const t = useTranslations("admin.notifications");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +51,6 @@ export default function AdminNotificationsPage() {
   }, [user]);
 
   async function handleClick(n: Notification) {
-    // Mark as read then navigate to the relevant page
     if (!n.read) {
       await markNotificationRead(n.id);
       setNotifications((prev) =>
@@ -72,15 +73,15 @@ export default function AdminNotificationsPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
           <p className="text-gray-500 mt-0.5 text-sm">
-            {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
+            {unreadCount > 0 ? t("unread", { count: unreadCount }) : t("allCaughtUp")}
           </p>
         </div>
         {unreadCount > 0 && (
           <Button variant="outline" size="sm" onClick={handleMarkAll}>
             <CheckCheck className="h-4 w-4" />
-            Mark all read
+            {t("markAllRead")}
           </Button>
         )}
       </div>
@@ -94,7 +95,7 @@ export default function AdminNotificationsPage() {
       ) : notifications.length === 0 ? (
         <Card className="py-16 text-center">
           <Bell className="h-10 w-10 mx-auto mb-3 text-gray-300" />
-          <p className="text-gray-400 font-medium">No notifications yet</p>
+          <p className="text-gray-400 font-medium">{t("noNotifications")}</p>
         </Card>
       ) : (
         <div className="space-y-2">
@@ -121,8 +122,8 @@ export default function AdminNotificationsPage() {
                       </p>
                       <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
                       <p className="text-xs text-navy-600 mt-1 font-medium">
-                        {n.type === "deposit" ? "→ Go to Deposits" :
-                         n.type === "withdrawal" ? "→ Go to Withdrawals" : "→ View"}
+                        {n.type === "deposit" ? t("goToDeposits") :
+                         n.type === "withdrawal" ? t("goToWithdrawals") : t("view")}
                       </p>
                     </div>
                     <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">

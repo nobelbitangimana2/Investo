@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   LayoutDashboard,
   PiggyBank,
@@ -20,7 +21,7 @@ import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   icon: React.ElementType;
   href: string;
   roles: UserRole[];
@@ -28,34 +29,34 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   // Client
-  { label: "Dashboard", icon: LayoutDashboard, href: "/client/dashboard", roles: ["client"] },
-  { label: "New Deposit", icon: ArrowDownToLine, href: "/client/deposits/new", roles: ["client"] },
-  { label: "Deposits", icon: PiggyBank, href: "/client/deposits", roles: ["client"] },
-  { label: "New Withdrawal", icon: ArrowUpFromLine, href: "/client/withdrawals/new", roles: ["client"] },
-  { label: "Withdrawals", icon: ArrowUpFromLine, href: "/client/withdrawals", roles: ["client"] },
-  { label: "Investments", icon: TrendingUp, href: "/client/investments", roles: ["client"] },
-  { label: "Notifications", icon: Bell, href: "/client/notifications", roles: ["client"] },
-  { label: "Settings", icon: Settings, href: "/client/settings", roles: ["client"] },
+  { labelKey: "dashboard", icon: LayoutDashboard, href: "/client/dashboard", roles: ["client"] },
+  { labelKey: "newDeposit", icon: ArrowDownToLine, href: "/client/deposits/new", roles: ["client"] },
+  { labelKey: "deposits", icon: PiggyBank, href: "/client/deposits", roles: ["client"] },
+  { labelKey: "newWithdrawal", icon: ArrowUpFromLine, href: "/client/withdrawals/new", roles: ["client"] },
+  { labelKey: "withdrawals", icon: ArrowUpFromLine, href: "/client/withdrawals", roles: ["client"] },
+  { labelKey: "investments", icon: TrendingUp, href: "/client/investments", roles: ["client"] },
+  { labelKey: "notifications", icon: Bell, href: "/client/notifications", roles: ["client"] },
+  { labelKey: "settings", icon: Settings, href: "/client/settings", roles: ["client"] },
 
   // Accountant
-  { label: "Dashboard", icon: LayoutDashboard, href: "/accountant/dashboard", roles: ["accountant"] },
-  { label: "Deposits", icon: PiggyBank, href: "/accountant/deposits", roles: ["accountant"] },
-  { label: "Withdrawals", icon: ArrowUpFromLine, href: "/accountant/withdrawals", roles: ["accountant"] },
-  { label: "Notifications", icon: Bell, href: "/accountant/notifications", roles: ["accountant"] },
-  { label: "Reports", icon: FileBarChart, href: "/accountant/reports", roles: ["accountant"] },
-  { label: "Settings", icon: Settings, href: "/accountant/settings", roles: ["accountant"] },
+  { labelKey: "dashboard", icon: LayoutDashboard, href: "/accountant/dashboard", roles: ["accountant"] },
+  { labelKey: "deposits", icon: PiggyBank, href: "/accountant/deposits", roles: ["accountant"] },
+  { labelKey: "withdrawals", icon: ArrowUpFromLine, href: "/accountant/withdrawals", roles: ["accountant"] },
+  { labelKey: "notifications", icon: Bell, href: "/accountant/notifications", roles: ["accountant"] },
+  { labelKey: "reports", icon: FileBarChart, href: "/accountant/reports", roles: ["accountant"] },
+  { labelKey: "settings", icon: Settings, href: "/accountant/settings", roles: ["accountant"] },
 
   // Admin
-  { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard", roles: ["admin"] },
-  { label: "Deposits", icon: PiggyBank, href: "/admin/deposits", roles: ["admin"] },
-  { label: "Withdrawals", icon: ArrowUpFromLine, href: "/admin/withdrawals", roles: ["admin"] },
-  { label: "Clients", icon: Users, href: "/admin/clients", roles: ["admin"] },
-  { label: "Accountants", icon: Shield, href: "/admin/accountants", roles: ["admin"] },
-  { label: "Interest Rates", icon: Percent, href: "/admin/interest-rates", roles: ["admin"] },
-  { label: "Notifications", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
-  { label: "Reports", icon: FileBarChart, href: "/admin/reports", roles: ["admin"] },
-  { label: "Audit Logs", icon: FileText, href: "/admin/audit-logs", roles: ["admin"] },
-  { label: "Settings", icon: Settings, href: "/admin/settings", roles: ["admin"] },
+  { labelKey: "dashboard", icon: LayoutDashboard, href: "/admin/dashboard", roles: ["admin"] },
+  { labelKey: "deposits", icon: PiggyBank, href: "/admin/deposits", roles: ["admin"] },
+  { labelKey: "withdrawals", icon: ArrowUpFromLine, href: "/admin/withdrawals", roles: ["admin"] },
+  { labelKey: "clients", icon: Users, href: "/admin/clients", roles: ["admin"] },
+  { labelKey: "accountants", icon: Shield, href: "/admin/accountants", roles: ["admin"] },
+  { labelKey: "interestRates", icon: Percent, href: "/admin/interest-rates", roles: ["admin"] },
+  { labelKey: "notifications", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
+  { labelKey: "reports", icon: FileBarChart, href: "/admin/reports", roles: ["admin"] },
+  { labelKey: "auditLogs", icon: FileText, href: "/admin/audit-logs", roles: ["admin"] },
+  { labelKey: "settings", icon: Settings, href: "/admin/settings", roles: ["admin"] },
 ];
 
 interface SidebarProps {
@@ -64,6 +65,7 @@ interface SidebarProps {
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
   const items = navItems.filter((item) => item.roles.includes(role));
 
   return (
@@ -93,7 +95,7 @@ export function Sidebar({ role }: SidebarProps) {
               )}
             >
               <Icon className="h-5 w-5" />
-              {item.label}
+              {t(item.labelKey as Parameters<typeof t>[0])}
             </Link>
           );
         })}

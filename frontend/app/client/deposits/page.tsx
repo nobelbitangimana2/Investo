@@ -10,10 +10,12 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Deposit } from "@/types";
 
 export default function ClientDepositsPage() {
   const { user } = useAuthStore();
+  const t = useTranslations("client.deposits");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewTarget, setViewTarget] = useState<Deposit | null>(null);
@@ -27,21 +29,21 @@ export default function ClientDepositsPage() {
   }, [user]);
 
   const columns: Column<Deposit>[] = [
-    { key: "depositDate", header: "Date", sortable: true, cell: (r) => formatDate(r.depositDate) },
-    { key: "bank", header: "Bank", sortable: true },
-    { key: "accountNumber", header: "Account" },
+    { key: "depositDate", header: t("colDate"), sortable: true, cell: (r) => formatDate(r.depositDate) },
+    { key: "bank", header: t("colBank"), sortable: true },
+    { key: "accountNumber", header: t("colAccount") },
     {
       key: "amount",
-      header: "Amount",
+      header: t("colAmount"),
       sortable: true,
       cell: (r) => <span className="font-semibold">{formatCurrency(r.amount)}</span>,
     },
-    { key: "investmentPeriod", header: "Period", sortable: true },
-    { key: "referenceNumber", header: "Reference" },
-    { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+    { key: "investmentPeriod", header: t("colPeriod"), sortable: true },
+    { key: "referenceNumber", header: t("colReference") },
+    { key: "status", header: t("colStatus"), cell: (r) => <StatusBadge status={r.status} /> },
     {
       key: "rejectionNote",
-      header: "Note",
+      header: t("colNote"),
       cell: (r) =>
         r.rejectionNote ? (
           <span
@@ -69,13 +71,13 @@ export default function ClientDepositsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">My Deposits</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">{deposits.length} total deposits</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("totalDeposits", { count: deposits.length })}</p>
         </div>
         <Link href="/client/deposits/new">
           <Button>
             <Plus className="h-4 w-4" />
-            New Deposit
+            {t("newDeposit")}
           </Button>
         </Link>
       </div>
@@ -85,19 +87,18 @@ export default function ClientDepositsPage() {
         columns={columns}
         loading={loading}
         searchable
-        searchPlaceholder="Search deposits..."
+        searchPlaceholder={t("searchPlaceholder")}
         searchKeys={["bank", "referenceNumber", "status"]}
-        emptyMessage="No deposits found. Submit your first deposit to get started."
+        emptyMessage={t("noDeposits")}
       />
 
       {viewTarget && (
-        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title="Deposit Details">
+        <Modal open={!!viewTarget} onClose={() => setViewTarget(null)} title={t("detailTitle")}>
           <div className="space-y-4 text-sm">
-            {/* Receipt image */}
             {viewTarget.receiptUrl && (
               <div className="rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
                 <p className="px-3 py-2 text-xs font-medium text-gray-500 border-b border-gray-200">
-                  Deposit Receipt
+                  {t("receiptLabel")}
                 </p>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -112,19 +113,19 @@ export default function ClientDepositsPage() {
             )}
             <div className="space-y-3">
               {([
-                ["Bank", viewTarget.bank],
-                ["Account", viewTarget.accountNumber],
-                ["Amount", formatCurrency(viewTarget.amount)],
-                ["Date", formatDate(viewTarget.depositDate)],
-                ["Reference", viewTarget.referenceNumber],
-                ["Period", viewTarget.investmentPeriod],
-                ["Status", viewTarget.status],
-                ["Submitted", formatDateTime(viewTarget.submittedAt)],
+                [t("fieldBank"), viewTarget.bank],
+                [t("fieldAccount"), viewTarget.accountNumber],
+                [t("fieldAmount"), formatCurrency(viewTarget.amount)],
+                [t("fieldDate"), formatDate(viewTarget.depositDate)],
+                [t("fieldReference"), viewTarget.referenceNumber],
+                [t("fieldPeriod"), viewTarget.investmentPeriod],
+                [t("fieldStatus"), viewTarget.status],
+                [t("fieldSubmitted"), formatDateTime(viewTarget.submittedAt)],
                 viewTarget.verifiedAt
-                  ? ["Verified", formatDateTime(viewTarget.verifiedAt)]
+                  ? [t("fieldVerified"), formatDateTime(viewTarget.verifiedAt)]
                   : null,
                 viewTarget.rejectionNote
-                  ? ["Rejection Note", viewTarget.rejectionNote]
+                  ? [t("fieldRejectionNote"), viewTarget.rejectionNote]
                   : null,
               ] as ([string, string] | null)[])
                 .filter((x): x is [string, string] => x !== null)

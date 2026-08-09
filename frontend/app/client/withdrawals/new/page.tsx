@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 import type { Investment } from "@/types";
 
 const BANKS = ["Bancobu", "BCB", "KCB", "Ecobank"];
@@ -23,6 +24,7 @@ export default function NewWithdrawalPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const toast = useToast();
+  const t = useTranslations("client.withdrawals.form");
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [loadingInvestments, setLoadingInvestments] = useState(true);
 
@@ -50,22 +52,19 @@ export default function NewWithdrawalPage() {
   async function onSubmit(data: WithdrawalFormValues) {
     if (!user) return;
 
-    // Client-side balance check before hitting the backend
     if (totalBalance === 0) {
-      toast.error("You have no available balance to withdraw.");
+      toast.error(t("noBalance"));
       return;
     }
 
     if (totalBalance > 0 && data.amount > totalBalance) {
-      toast.error(
-        `Insufficient balance. You can withdraw up to ${formatCurrency(totalBalance)}.`
-      );
+      toast.error(t("insufficientBalance", { amount: formatCurrency(totalBalance) }));
       return;
     }
 
     try {
       await submitWithdrawal(user.id, data);
-      toast.success("Withdrawal request submitted! Our team will process it shortly.");
+      toast.success(t("successMessage"));
       router.push("/client/withdrawals");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to submit withdrawal.";
@@ -73,7 +72,6 @@ export default function NewWithdrawalPage() {
     }
   }
 
-  // Portfolio balance summary
   const totalPrincipal = investments.reduce((s, i) => s + i.currentPrincipal, 0);
   const totalAccruedInterest = investments.reduce((s, i) => s + i.accruedInterest, 0);
   const totalBalance = totalPrincipal + totalAccruedInterest;
@@ -89,20 +87,15 @@ export default function NewWithdrawalPage() {
           <ArrowLeft className="h-5 w-5 text-gray-600" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Request Withdrawal</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">
-            Request a transfer from your investment account
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
       </div>
 
       {/* Processing notice */}
       <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 flex gap-3">
         <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-amber-700">
-          Withdrawal requests are reviewed by our team before funds are transferred. Processing may
-          take 1–3 business days.
-        </p>
+        <p className="text-sm text-amber-700">{t("processingNotice")}</p>
       </div>
 
       {/* Current balance summary */}
@@ -111,42 +104,41 @@ export default function NewWithdrawalPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Wallet className="h-5 w-5 text-navy-600" />
-              Your Available Balance
+              {t("availableBalance")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
               <div className="rounded-lg bg-navy-50 p-3 text-center">
                 <p className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1">
-                  <Wallet className="h-3 w-3" /> Total Balance
+                  <Wallet className="h-3 w-3" /> {t("totalBalance")}
                 </p>
                 <p className="text-lg font-bold text-navy-700">{formatCurrency(totalBalance)}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Max withdrawable</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{t("maxWithdrawable")}</p>
               </div>
               <div className="rounded-lg bg-gray-50 p-3 text-center">
                 <p className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1">
-                  <PiggyBank className="h-3 w-3" /> Principal
+                  <PiggyBank className="h-3 w-3" /> {t("principal")}
                 </p>
                 <p className="text-lg font-bold text-gray-800">
                   {formatCurrency(totalPrincipal)}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Remaining capital</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{t("remainingCapital")}</p>
               </div>
               <div className="rounded-lg bg-emerald-50 p-3 text-center">
                 <p className="text-xs text-gray-500 mb-1 flex items-center justify-center gap-1">
-                  <TrendingUp className="h-3 w-3 text-emerald-600" /> Accrued Interest
+                  <TrendingUp className="h-3 w-3 text-emerald-600" /> {t("accruedInterest")}
                 </p>
                 <p className="text-lg font-bold text-emerald-600">
                   {formatCurrency(totalAccruedInterest)}
                 </p>
-                <p className="text-[10px] text-gray-400 mt-0.5">Deducted first</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{t("deductedFirst")}</p>
               </div>
             </div>
 
             {activeInvestments.length > 1 && (
               <p className="text-xs text-gray-500 pt-1">
-                You have {activeInvestments.length} active investments. The withdrawal amount will
-                be distributed proportionally across all of them.
+                {t("multipleInvestments", { count: activeInvestments.length })}
               </p>
             )}
           </CardContent>
@@ -157,23 +149,12 @@ export default function NewWithdrawalPage() {
       <div className="rounded-xl border border-blue-100 bg-blue-50 p-4 flex gap-3">
         <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
         <div className="space-y-1.5 text-xs text-blue-800">
-          <p className="font-semibold text-sm">How withdrawals are processed</p>
+          <p className="font-semibold text-sm">{t("howItWorks")}</p>
           <ul className="list-disc list-inside space-y-1 text-blue-700">
-            <li>
-              <strong>Interest first:</strong> Accrued interest is deducted before any principal.
-            </li>
-            <li>
-              <strong>Multiple investments:</strong> If you have more than one investment, the
-              withdrawal is split proportionally based on each investment&apos;s current value.
-            </li>
-            <li>
-              <strong>Future interest:</strong> After a withdrawal, future interest is calculated
-              only on the remaining principal.
-            </li>
-            <li>
-              <strong>Maximum amount:</strong> You cannot withdraw more than your total balance
-              (principal + accrued interest).
-            </li>
+            <li><strong>Interest first:</strong> {t("ruleInterestFirst")}</li>
+            <li><strong>Multiple investments:</strong> {t("ruleMultiple", { count: activeInvestments.length })}</li>
+            <li><strong>Future interest:</strong> {t("ruleFutureInterest")}</li>
+            <li><strong>Maximum amount:</strong> {t("ruleMax")}</li>
           </ul>
         </div>
       </div>
@@ -181,12 +162,12 @@ export default function NewWithdrawalPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <Card>
           <CardHeader>
-            <CardTitle>Withdrawal Details</CardTitle>
+            <CardTitle>{t("sectionDetails")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
-              label="Your Full Name"
-              placeholder="As registered on your account"
+              label={t("fullName")}
+              placeholder={t("fullNamePlaceholder")}
               error={errors.fullName?.message}
               {...register("fullName")}
             />
@@ -196,8 +177,8 @@ export default function NewWithdrawalPage() {
                 control={control}
                 render={({ field }) => (
                   <Select
-                    label="Bank to Transfer To"
-                    placeholder="Select bank"
+                    label={t("bankToTransfer")}
+                    placeholder={t("bankPlaceholder")}
                     options={BANKS.map((b) => ({ value: b, label: b }))}
                     error={errors.bankToTransferTo?.message}
                     {...field}
@@ -205,33 +186,33 @@ export default function NewWithdrawalPage() {
                 )}
               />
               <Input
-                label="Account Number"
-                placeholder="Destination account number"
+                label={t("accountNumber")}
+                placeholder={t("accountNumberPlaceholder")}
                 error={errors.accountNumber?.message}
                 {...register("accountNumber")}
               />
             </div>
             <Input
-              label="Recipient Full Name"
-              placeholder="Name on the destination account"
+              label={t("recipientName")}
+              placeholder={t("recipientPlaceholder")}
               error={errors.recipientName?.message}
               {...register("recipientName")}
             />
             <div>
               <Input
-                label="Amount (BIF)"
+                label={t("amount")}
                 type="number"
-                placeholder="Amount to withdraw"
+                placeholder={t("amountPlaceholder")}
                 error={errors.amount?.message}
                 {...register("amount", { valueAsNumber: true })}
               />
               {totalBalance > 0 && (
                 <p className="mt-1.5 text-xs text-gray-400">
-                  Available balance:{" "}
+                  {t("availableLabel")}{" "}
                   <span className="font-semibold text-gray-600">
                     {formatCurrency(totalBalance)}
                   </span>
-                  {" "}· Minimum: {formatCurrency(1000)}
+                  {" "}· {t("minLabel")} {formatCurrency(1000)}
                 </p>
               )}
             </div>
@@ -243,7 +224,7 @@ export default function NewWithdrawalPage() {
             Cancel
           </Button>
           <Button type="submit" loading={isSubmitting}>
-            Submit Request
+            {t("submitButton")}
           </Button>
         </div>
       </form>
