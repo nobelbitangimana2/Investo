@@ -1,7 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { TrendingUp, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
@@ -10,11 +9,11 @@ import { Button } from "@/components/ui/button";
 
 type State = "loading" | "success" | "expired" | "invalid" | "already-verified";
 
+// ── Inner component uses useSearchParams — must be inside Suspense ──────────
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const [state, setState] = useState<State>("loading");
-  const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [resending, setResending] = useState(false);
   const [resendMsg, setResendMsg] = useState<string | null>(null);
@@ -22,27 +21,24 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) {
       setState("invalid");
-      setMessage("No verification token found in the link. Please check your email.");
       return;
     }
 
     verifyEmail(token)
       .then((res) => {
-        if (res.message.includes("already")) {
+        if (res.message.toLowerCase().includes("already")) {
           setState("already-verified");
         } else {
           setState("success");
         }
-        setMessage(res.message);
       })
       .catch((err: Error) => {
-        const msg = err.message ?? "";
-        if (msg.toLowerCase().includes("expired")) {
+        const msg = (err.message ?? "").toLowerCase();
+        if (msg.includes("expired")) {
           setState("expired");
         } else {
           setState("invalid");
         }
-        setMessage(msg);
       });
   }, [token]);
 
@@ -60,36 +56,43 @@ function VerifyEmailContent() {
     }
   }
 
+  if (state === "loading") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-12 w-12 text-white animate-spin mx-auto" />
+          <p className="text-white/70 text-sm">Verifying your email…</p>
+        </div>
+      </div>
+    );
+  }
+
   const configs = {
-    loading: {
-      icon: <Loader2 className="h-12 w-12 text-navy-600 animate-spin" />,
-      title: "Verifying your email…",
-      subtitle: "Please wait while we verify your email address.",
-      bg: "bg-navy-50",
-    },
     success: {
       icon: <CheckCircle className="h-12 w-12 text-emerald-600" />,
+      bg: "bg-emerald-50",
       title: "Email verified!",
       subtitle: "Your email has been verified successfully. You can now sign in.",
-      bg: "bg-emerald-50",
     },
     "already-verified": {
       icon: <CheckCircle className="h-12 w-12 text-emerald-600" />,
+      bg: "bg-emerald-50",
       title: "Already verified",
       subtitle: "Your email is already verified. You can sign in.",
-      bg: "bg-emerald-50",
     },
     expired: {
       icon: <Clock className="h-12 w-12 text-amber-500" />,
-      title: "Link expired",
-      subtitle: "This verification link has expired (links are valid for 24 hours).",
       bg: "bg-amber-50",
+      title: "Link expired",
+      subtitle:
+        "This verification link has expired (links are valid for 24 hours). Enter your email below to receive a new one.",
     },
     invalid: {
       icon: <XCircle className="h-12 w-12 text-red-500" />,
-      title: "Invalid link",
-      subtitle: "This verification link is invalid or has already been used.",
       bg: "bg-red-50",
+      title: "Invalid link",
+      subtitle:
+        "This verification link is invalid or has already been used.",
     },
   };
 
@@ -98,7 +101,6 @@ function VerifyEmailContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
@@ -113,16 +115,11 @@ function VerifyEmailContent() {
             {cfg.icon}
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{cfg.title}</h1>
-          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
-            {cfg.subtitle}
-          </p>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">{cfg.subtitle}</p>
 
-          {/* Expired: show resend form */}
+          {/* Expired: resend form */}
           {state === "expired" && (
             <div className="mb-6 space-y-3">
-              <p className="text-sm text-gray-600">
-                Enter your email address to receive a new verification link:
-              </p>
               <input
                 type="email"
                 value={email}
@@ -135,33 +132,22 @@ function VerifyEmailContent() {
                   {resendMsg}
                 </p>
               )}
-              <Button
-                onClick={handleResend}
-                disabled={!email || resending}
-                loading={resending}
-                className="w-full"
-              >
+              <Button onClick={handleResend} disabled={!email || resending} loading={resending} className="w-full">
                 Send New Verification Link
               </Button>
             </div>
           )}
 
-          {/* Success / already-verified: show sign in button */}
           {(state === "success" || state === "already-verified") && (
             <Link href="/login">
-              <Button className="w-full" size="lg">
-                Sign In to Investo
-              </Button>
+              <Button className="w-full" size="lg">Sign In to Investo</Button>
             </Link>
           )}
 
-          {/* Invalid: link to register */}
           {state === "invalid" && (
             <div className="flex flex-col gap-3">
               <Link href="/login">
-                <Button variant="outline" className="w-full">
-                  Back to Login
-                </Button>
+                <Button variant="outline" className="w-full">Back to Login</Button>
               </Link>
               <Link href="/register">
                 <Button className="w-full">Create New Account</Button>
@@ -174,6 +160,7 @@ function VerifyEmailContent() {
   );
 }
 
+// ── Page export wraps content in Suspense ────────────────────────────────────
 export default function VerifyEmailPage() {
   return (
     <Suspense
