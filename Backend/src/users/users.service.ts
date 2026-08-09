@@ -2,11 +2,14 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateAccountantDto } from './dto/create-accountant.dto';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Role, UserStatus } from '@prisma/client';
 
@@ -28,6 +31,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditLogs: AuditLogsService,
+    private readonly cloudinary: CloudinaryService,
   ) {}
 
   // ── List all users (admin) ─────────────────────────────────────────
@@ -109,7 +113,22 @@ export class UsersService {
     return updated;
   }
 
-  // ── Assign / update accountant permissions ────────────────────────
+  // ── Change own password (any role) ───────────────────────────────
+  async changePassword(userId: string, dto: ChangePasswordDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    const valid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    const hash = await bcrypt.hash(dto.newPassword, SALT_ROUNDS);
+    await this.prisma.user.update({ where: { id: userId }, data: { passwordHash: hash } });
+    return { message: 'Password updated successfully' };
+  }
+
+  // ── Upload own avatar (any role) ──────────────────────────────────
+  async uploadAvatar(userId: string, file: Express.Multer.File) {
+    const url = await this.cloudinary.upload(file, 'avatars');
+    await this.prisma.user.update({ where: { id: userId }, data: { profilePicture: url } });
+    return { profilePicture: url };
+  }
   async updatePermissions(
     accountantId: string,
     dto: UpdatePermissionsDto,

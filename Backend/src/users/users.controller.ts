@@ -6,17 +6,22 @@ import {
   Param,
   Body,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
   ApiResponse,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { Role, UserStatus } from '@prisma/client';
 import { UsersService } from './users.service';
 import { CreateAccountantDto } from './dto/create-accountant.dto';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -86,5 +91,29 @@ export class UsersController {
     @CurrentUser() admin: User,
   ) {
     return this.users.updatePermissions(id, dto, admin.id);
+  }
+
+  // ── Self-service endpoints (all roles) ─────────────────────────────
+
+  @Patch('me/password')
+  @ApiOperation({ summary: 'Change own password' })
+  @ApiResponse({ status: 200, description: 'Password updated' })
+  @ApiResponse({ status: 401, description: 'Current password incorrect' })
+  changePassword(
+    @CurrentUser() user: User,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    return this.users.changePassword(user.id, dto);
+  }
+
+  @Patch('me/avatar')
+  @ApiOperation({ summary: 'Upload own profile picture' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar', { storage: undefined }))
+  uploadAvatar(
+    @CurrentUser() user: User,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.users.uploadAvatar(user.id, file);
   }
 }

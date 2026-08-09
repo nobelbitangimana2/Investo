@@ -278,6 +278,25 @@ export async function updateUserStatus(
   return normalizeUser(res);
 }
 
+export async function changePassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ message: string }> {
+  return apiPatch<{ message: string }>("/users/me/password", {
+    currentPassword,
+    newPassword,
+  });
+}
+
+export async function uploadAvatar(file: File): Promise<{ profilePicture: string }> {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  return apiFetch<{ profilePicture: string }>("/users/me/avatar", {
+    method: "PATCH",
+    body: formData,
+  });
+}
+
 // ─────────────────────────────────────────────
 // Client Profiles
 // ─────────────────────────────────────────────

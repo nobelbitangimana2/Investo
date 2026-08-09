@@ -1,33 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { User, Lock, Camera, Eye, EyeOff } from "lucide-react";
+import { useRef, useState } from "react";
+import { User, Lock, Eye, EyeOff, Camera, Info } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
-import {
-  getClientProfile,
-  updateClientProfile,
-  changePassword,
-  uploadAvatar,
-} from "@/lib/mock-api";
-import { profileSchema, type ProfileFormValues } from "@/lib/zod-schemas";
+import { changePassword, uploadAvatar } from "@/lib/mock-api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { getInitials } from "@/lib/utils";
-import type { ClientProfile } from "@/types";
 
-export default function ClientSettingsPage() {
+export default function AccountantSettingsPage() {
   const { user, updateUser } = useAuthStore();
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [profile, setProfile] = useState<ClientProfile | null>(null);
+
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
-  // Password form state
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -37,35 +27,6 @@ export default function ClientSettingsPage() {
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState<string | null>(null);
 
-  const {
-    register,
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting, isDirty },
-  } = useForm<ProfileFormValues>({ resolver: zodResolver(profileSchema) });
-
-  useEffect(() => {
-    if (!user) return;
-    getClientProfile(user.id).then((p) => {
-      if (p) {
-        setProfile(p);
-        reset({
-          firstName: p.firstName,
-          lastName: p.lastName,
-          phone: p.phone ?? "",
-          address: p.address ?? "",
-          city: p.city ?? "",
-          province: p.province ?? "",
-          bankName: p.bankName ?? undefined,
-          accountNumber: p.accountNumber ?? "",
-          accountHolderName: p.accountHolderName ?? "",
-        });
-      }
-    });
-  }, [user, reset]);
-
-  // ── Avatar upload ──────────────────────────────────────────────────
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,24 +44,10 @@ export default function ClientSettingsPage() {
     }
   }
 
-  // ── Profile save ───────────────────────────────────────────────────
-  async function onSubmit(data: ProfileFormValues) {
-    if (!user) return;
-    await updateClientProfile(user.id, data);
-    toast.success("Profile updated successfully.");
-  }
-
-  // ── Password change ────────────────────────────────────────────────
   async function handlePasswordChange() {
     setPwError(null);
-    if (newPw.length < 8) {
-      setPwError("New password must be at least 8 characters.");
-      return;
-    }
-    if (newPw !== confirmPw) {
-      setPwError("New passwords do not match.");
-      return;
-    }
+    if (newPw.length < 8) { setPwError("New password must be at least 8 characters."); return; }
+    if (newPw !== confirmPw) { setPwError("New passwords do not match."); return; }
     setPwLoading(true);
     try {
       await changePassword(currentPw, newPw);
@@ -138,7 +85,7 @@ export default function ClientSettingsPage() {
                 />
               ) : (
                 <div className="h-20 w-20 rounded-full bg-navy-700 text-white flex items-center justify-center text-2xl font-bold">
-                  {getInitials(user?.name ?? "U")}
+                  {getInitials(user?.name ?? "AC")}
                 </div>
               )}
               <button
@@ -146,7 +93,6 @@ export default function ClientSettingsPage() {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
                 className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
-                aria-label="Upload profile picture"
               >
                 <Camera className="h-6 w-6 text-white" />
               </button>
@@ -154,6 +100,7 @@ export default function ClientSettingsPage() {
             <div>
               <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
               <p className="text-xs text-gray-400">{user?.email}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5 capitalize">{user?.role}</p>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
@@ -163,41 +110,41 @@ export default function ClientSettingsPage() {
                 {avatarUploading ? "Uploading…" : "Change photo"}
               </button>
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
         </CardContent>
       </Card>
 
-      {/* Personal Info — no bank card */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
-        <Card>
-          <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="First Name" error={errors.firstName?.message} {...register("firstName")} />
-              <Input label="Last Name" error={errors.lastName?.message} {...register("lastName")} />
+      {/* Account Info — read-only */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" /> Account Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="rounded-lg bg-amber-50 border border-amber-100 px-4 py-2.5 flex items-start gap-2">
+            <Info className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-700">
+              Your name and email are managed by your administrator and cannot be changed here.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">Full Name</p>
+              <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+                {user?.name}
+              </p>
             </div>
-            <Input label="Phone Number" placeholder="+257 79 000 000" error={errors.phone?.message} {...register("phone")} />
-            <Input label="Address" error={errors.address?.message} {...register("address")} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Input label="City" error={errors.city?.message} {...register("city")} />
-              <Input label="Province" error={errors.province?.message} {...register("province")} />
+            <div>
+              <p className="text-xs font-medium text-gray-500 mb-1">Email Address</p>
+              <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-700">
+                {user?.email}
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" loading={isSubmitting} disabled={!isDirty}>
-            Save Changes
-          </Button>
-        </div>
-      </form>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Change Password */}
       <Card>
@@ -208,59 +155,34 @@ export default function ClientSettingsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative">
-            <Input
-              label="Current Password"
-              type={showCurrent ? "text" : "password"}
-              placeholder="••••••••"
-              value={currentPw}
-              onChange={(e) => setCurrentPw(e.target.value)}
-              className="pr-10"
-            />
+            <Input label="Current Password" type={showCurrent ? "text" : "password"} placeholder="••••••••"
+              value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowCurrent(!showCurrent)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
               {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           <div className="relative">
-            <Input
-              label="New Password"
-              type={showNew ? "text" : "password"}
-              placeholder="At least 8 characters"
-              value={newPw}
-              onChange={(e) => setNewPw(e.target.value)}
-              className="pr-10"
-            />
+            <Input label="New Password" type={showNew ? "text" : "password"} placeholder="At least 8 characters"
+              value={newPw} onChange={(e) => setNewPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowNew(!showNew)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
               {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           <div className="relative">
-            <Input
-              label="Confirm New Password"
-              type={showConfirm ? "text" : "password"}
-              placeholder="Repeat new password"
-              value={confirmPw}
-              onChange={(e) => setConfirmPw(e.target.value)}
-              className="pr-10"
-            />
+            <Input label="Confirm New Password" type={showConfirm ? "text" : "password"} placeholder="Repeat new password"
+              value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} className="pr-10" />
             <button type="button" onClick={() => setShowConfirm(!showConfirm)}
               className="absolute right-3 top-8 text-gray-400 hover:text-gray-600">
               {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
           {pwError && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {pwError}
-            </p>
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{pwError}</p>
           )}
           <div className="flex justify-end">
-            <Button
-              type="button"
-              loading={pwLoading}
-              disabled={!currentPw || !newPw || !confirmPw}
-              onClick={handlePasswordChange}
-            >
+            <Button type="button" loading={pwLoading} disabled={!currentPw || !newPw || !confirmPw} onClick={handlePasswordChange}>
               Update Password
             </Button>
           </div>

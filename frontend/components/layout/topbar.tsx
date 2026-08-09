@@ -104,6 +104,30 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
                     Settings
                   </button>
                 )}
+                {user?.role === "admin" && (
+                  <button
+                    onClick={() => {
+                      router.push("/admin/settings");
+                      setShowUserMenu(false);
+                    }}
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    Settings
+                  </button>
+                )}
+                {user?.role === "accountant" && (
+                  <button
+                    onClick={() => {
+                      router.push("/accountant/settings");
+                      setShowUserMenu(false);
+                    }}
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl transition-colors"
+                  >
+                    <User className="h-4 w-4" />
+                    Settings
+                  </button>
+                )}
                 <button
                   onClick={handleLogout}
                   className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-b-xl transition-colors"

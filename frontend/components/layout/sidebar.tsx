@@ -43,6 +43,7 @@ const navItems: NavItem[] = [
   { label: "Withdrawals", icon: ArrowUpFromLine, href: "/accountant/withdrawals", roles: ["accountant"] },
   { label: "Notifications", icon: Bell, href: "/accountant/notifications", roles: ["accountant"] },
   { label: "Reports", icon: FileBarChart, href: "/accountant/reports", roles: ["accountant"] },
+  { label: "Settings", icon: Settings, href: "/accountant/settings", roles: ["accountant"] },
 
   // Admin
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin/dashboard", roles: ["admin"] },
@@ -54,6 +55,7 @@ const navItems: NavItem[] = [
   { label: "Notifications", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
   { label: "Reports", icon: FileBarChart, href: "/admin/reports", roles: ["admin"] },
   { label: "Audit Logs", icon: FileText, href: "/admin/audit-logs", roles: ["admin"] },
+  { label: "Settings", icon: Settings, href: "/admin/settings", roles: ["admin"] },
 ];
 
 interface SidebarProps {
