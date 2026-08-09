@@ -22,6 +22,7 @@ import { UsersService } from './users.service';
 import { CreateAccountantDto } from './dto/create-accountant.dto';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -115,5 +116,17 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     return this.users.uploadAvatar(user.id, file);
+  }
+
+  @Get('me/profile')
+  @ApiOperation({ summary: 'Get own profile info (all roles)' })
+  getMyProfile(@CurrentUser() user: User) {
+    return this.users.getMyProfile(user.id);
+  }
+
+  @Patch('me/contact')
+  @ApiOperation({ summary: 'Update own contact info (all roles)' })
+  updateContact(@CurrentUser() user: User, @Body() dto: UpdateContactDto) {
+    return this.users.updateContact(user.id, dto);
   }
 }

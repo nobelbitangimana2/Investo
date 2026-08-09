@@ -16,6 +16,11 @@ model User {
   role                     Role                  @default(CLIENT)
   profilePicture           String?
   status                   UserStatus            @default(ACTIVE)
+  // ── Contact info (editable by all roles) ───────────────────────
+  phone                    String?
+  address                  String?
+  city                     String?
+  province                 String?
   // ── Email verification ──────────────────────────────────────────
   emailVerified            Boolean               @default(false)
   verificationToken        String?               @unique

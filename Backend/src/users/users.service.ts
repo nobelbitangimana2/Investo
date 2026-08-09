@@ -10,6 +10,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateAccountantDto } from './dto/create-accountant.dto';
 import { UpdatePermissionsDto } from './dto/update-permissions.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { UpdateContactDto } from './dto/update-contact.dto';
 import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { Role, UserStatus } from '@prisma/client';
 
@@ -128,6 +129,33 @@ export class UsersService {
     const url = await this.cloudinary.upload(file, 'avatars');
     await this.prisma.user.update({ where: { id: userId }, data: { profilePicture: url } });
     return { profilePicture: url };
+  }
+
+  // ── Update own contact info (any role) ────────────────────────────
+  async updateContact(userId: string, dto: UpdateContactDto) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        phone: dto.phone,
+        address: dto.address,
+        city: dto.city,
+        province: dto.province,
+      },
+      select: { id: true, phone: true, address: true, city: true, province: true },
+    });
+    return user;
+  }
+
+  // ── Get own profile (any role) ────────────────────────────────────
+  async getMyProfile(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, name: true, email: true, role: true,
+        profilePicture: true, status: true,
+        phone: true, address: true, city: true, province: true,
+      },
+    });
   }
   async updatePermissions(
     accountantId: string,

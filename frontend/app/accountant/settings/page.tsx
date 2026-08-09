@@ -1,9 +1,14 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { User, Lock, Eye, EyeOff, Camera, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { User, Lock, Eye, EyeOff, Camera, Info, MapPin } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
-import { changePassword, uploadAvatar } from "@/lib/mock-api";
+import {
+  changePassword,
+  uploadAvatar,
+  getMyUserProfile,
+  updateContactInfo,
+} from "@/lib/mock-api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,9 +20,19 @@ export default function AccountantSettingsPage() {
   const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Avatar
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
+  // Contact info
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [province, setProvince] = useState("");
+  const [contactLoading, setContactLoading] = useState(false);
+  const [contactDirty, setContactDirty] = useState(false);
+
+  // Password
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirmPw, setConfirmPw] = useState("");
@@ -26,6 +41,17 @@ export default function AccountantSettingsPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [pwLoading, setPwLoading] = useState(false);
   const [pwError, setPwError] = useState<string | null>(null);
+
+  // Load existing contact info
+  useEffect(() => {
+    if (!user) return;
+    getMyUserProfile().then((p) => {
+      setPhone(p.phone ?? "");
+      setAddress(p.address ?? "");
+      setCity(p.city ?? "");
+      setProvince(p.province ?? "");
+    }).catch(() => {/* non-critical */});
+  }, [user]);
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -41,6 +67,19 @@ export default function AccountantSettingsPage() {
       setAvatarPreview(null);
     } finally {
       setAvatarUploading(false);
+    }
+  }
+
+  async function handleContactSave() {
+    setContactLoading(true);
+    try {
+      await updateContactInfo({ phone, address, city, province });
+      toast.success("Contact information updated.");
+      setContactDirty(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to save.");
+    } finally {
+      setContactLoading(false);
     }
   }
 
@@ -78,22 +117,16 @@ export default function AccountantSettingsPage() {
             <div className="relative group">
               {currentAvatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={currentAvatar}
-                  alt={user?.name}
-                  className="h-20 w-20 rounded-full object-cover border-2 border-gray-200"
-                />
+                <img src={currentAvatar} alt={user?.name}
+                  className="h-20 w-20 rounded-full object-cover border-2 border-gray-200" />
               ) : (
                 <div className="h-20 w-20 rounded-full bg-navy-700 text-white flex items-center justify-center text-2xl font-bold">
                   {getInitials(user?.name ?? "AC")}
                 </div>
               )}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+              <button type="button" onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
-                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
-              >
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Camera className="h-6 w-6 text-white" />
               </button>
             </div>
@@ -101,12 +134,9 @@ export default function AccountantSettingsPage() {
               <p className="text-sm font-semibold text-gray-800">{user?.name}</p>
               <p className="text-xs text-gray-400">{user?.email}</p>
               <p className="text-[11px] text-gray-400 mt-0.5 capitalize">{user?.role}</p>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+              <button type="button" onClick={() => fileInputRef.current?.click()}
                 disabled={avatarUploading}
-                className="mt-2 text-xs font-medium text-navy-600 hover:underline disabled:opacity-50"
-              >
+                className="mt-2 text-xs font-medium text-navy-600 hover:underline disabled:opacity-50">
                 {avatarUploading ? "Uploading…" : "Change photo"}
               </button>
             </div>
@@ -115,7 +145,7 @@ export default function AccountantSettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Account Info — read-only */}
+      {/* Account Info — read-only name + email */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -142,6 +172,53 @@ export default function AccountantSettingsPage() {
                 {user?.email}
               </p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Info — editable */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" /> Contact Information
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Input
+            label="Phone Number"
+            placeholder="+257 79 000 000"
+            value={phone}
+            onChange={(e) => { setPhone(e.target.value); setContactDirty(true); }}
+          />
+          <Input
+            label="Address"
+            placeholder="15, Avenue du Large"
+            value={address}
+            onChange={(e) => { setAddress(e.target.value); setContactDirty(true); }}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Input
+              label="City"
+              placeholder="Bujumbura"
+              value={city}
+              onChange={(e) => { setCity(e.target.value); setContactDirty(true); }}
+            />
+            <Input
+              label="Province"
+              placeholder="Bujumbura Mairie"
+              value={province}
+              onChange={(e) => { setProvince(e.target.value); setContactDirty(true); }}
+            />
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              loading={contactLoading}
+              disabled={!contactDirty}
+              onClick={handleContactSave}
+            >
+              Save Contact Info
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -182,7 +259,8 @@ export default function AccountantSettingsPage() {
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{pwError}</p>
           )}
           <div className="flex justify-end">
-            <Button type="button" loading={pwLoading} disabled={!currentPw || !newPw || !confirmPw} onClick={handlePasswordChange}>
+            <Button type="button" loading={pwLoading}
+              disabled={!currentPw || !newPw || !confirmPw} onClick={handlePasswordChange}>
               Update Password
             </Button>
           </div>

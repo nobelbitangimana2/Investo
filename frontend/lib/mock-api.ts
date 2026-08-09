@@ -298,6 +298,20 @@ export async function uploadAvatar(file: File): Promise<{ profilePicture: string
   });
 }
 
+export async function getMyUserProfile(): Promise<{
+  id: string; name: string; email: string; role: string;
+  profilePicture?: string; phone?: string; address?: string;
+  city?: string; province?: string;
+}> {
+  return apiGet("/users/me/profile");
+}
+
+export async function updateContactInfo(data: {
+  phone?: string; address?: string; city?: string; province?: string;
+}): Promise<{ phone?: string; address?: string; city?: string; province?: string }> {
+  return apiPatch("/users/me/contact", data);
+}
+
 // ─────────────────────────────────────────────
 // Client Profiles
 // ─────────────────────────────────────────────
