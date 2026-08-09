@@ -37,7 +37,7 @@ import {
 
 function normalizeUser(u: Record<string, unknown>): User {
   return {
-    ...(u as User),
+    ...(u as unknown as User),
     role: (u.role as string).toLowerCase() as User["role"],
     status: (u.status as string).toLowerCase() as User["status"],
   };
