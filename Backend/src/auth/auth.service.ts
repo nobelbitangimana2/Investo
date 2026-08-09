@@ -243,14 +243,27 @@ export class AuthService {
   private async generateTokens(userId: string, email: string, role: Role) {
     const payload = { sub: userId, email, role };
 
+    const accessExpiry = this.config.get<string>('JWT_ACCESS_EXPIRY') ?? '900'; // 15 min
+    const refreshExpiry = this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '604800'; // 7 days
+
+    // Convert string durations to seconds for @nestjs/jwt v11 compatibility
+    const toSeconds = (val: string): number => {
+      const num = parseInt(val, 10);
+      if (!isNaN(num)) return num;
+      if (val.endsWith('m')) return parseInt(val) * 60;
+      if (val.endsWith('h')) return parseInt(val) * 3600;
+      if (val.endsWith('d')) return parseInt(val) * 86400;
+      return 900;
+    };
+
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(payload, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: this.config.get<string>('JWT_ACCESS_EXPIRY') ?? '15m',
+        expiresIn: toSeconds(accessExpiry),
       }),
       this.jwt.signAsync(payload, {
         secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: this.config.get<string>('JWT_REFRESH_EXPIRY') ?? '7d',
+        expiresIn: toSeconds(refreshExpiry),
       }),
     ]);
 
