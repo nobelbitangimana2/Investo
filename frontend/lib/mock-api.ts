@@ -37,9 +37,14 @@ import {
 
 function normalizeUser(u: Record<string, unknown>): User {
   return {
-    ...(u as unknown as User),
+    id: u.id as string,
+    name: u.name as string,
+    email: u.email as string,
     role: (u.role as string).toLowerCase() as User["role"],
     status: (u.status as string).toLowerCase() as User["status"],
+    profilePicture: u.profilePicture as string | undefined,
+    createdAt: u.createdAt as string,
+    updatedAt: u.updatedAt as string,
   };
 }
 
