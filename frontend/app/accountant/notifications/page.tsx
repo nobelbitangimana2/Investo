@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, CheckCheck, PiggyBank, ArrowUpFromLine, TrendingUp, Settings } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useNotificationStore } from "@/lib/notification-store";
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,6 +40,7 @@ export default function AccountantNotificationsPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const t = useTranslations("accountant.notifications");
+  const { setUnreadCount } = useNotificationStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +58,8 @@ export default function AccountantNotificationsPage() {
       setNotifications((prev) =>
         prev.map((x) => (x.id === n.id ? { ...x, read: true } : x))
       );
+      // Decrement badge
+      setUnreadCount(notifications.filter((x) => !x.read && x.id !== n.id).length);
     }
     const config = typeConfig[n.type] ?? typeConfig.system;
     router.push(config.route);
@@ -65,6 +69,7 @@ export default function AccountantNotificationsPage() {
     if (!user) return;
     await markAllNotificationsRead(user.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;

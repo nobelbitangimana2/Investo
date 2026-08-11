@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useNotificationStore } from "@/lib/notification-store";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 import { getNotifications } from "@/lib/mock-api";
@@ -12,17 +13,16 @@ interface AppShellProps {
 
 export function AppShell({ children }: AppShellProps) {
   const { user } = useAuthStore();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount, setUnreadCount } = useNotificationStore();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Fetch unread notification count for ALL roles so the bell badge works everywhere
     if (user) {
       getNotifications(user.id).then((notifs) => {
         setUnreadCount(notifs.filter((n) => !n.read).length);
       });
     }
-  }, [user]);
+  }, [user, setUnreadCount]);
 
   if (!user) return null;
 

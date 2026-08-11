@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useNotificationStore } from "@/lib/notification-store";
 import { getNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,6 +22,7 @@ const typeColors: Record<string, string> = {
 export default function ClientNotificationsPage() {
   const { user } = useAuthStore();
   const t = useTranslations("client.notifications");
+  const { setUnreadCount } = useNotificationStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,12 +36,15 @@ export default function ClientNotificationsPage() {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+    // Decrement badge in topbar
+    setUnreadCount(notifications.filter((n) => !n.read && n.id !== id).length);
   }
 
   async function handleMarkAll() {
     if (!user) return;
     await markAllNotificationsRead(user.id);
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
   }
 
   const unreadCount = notifications.filter((n) => !n.read).length;
