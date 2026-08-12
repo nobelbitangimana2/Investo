@@ -1,0 +1,54 @@
+{
+  "expo": {
+    "name": "Investo",
+    "slug": "investo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f2167"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "bi.investo.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f2167"
+      },
+      "package": "bi.investo.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        { "photosPermission": "Allow Investo to access your photos to upload deposit receipts." }
+      ],
+      [
+        "expo-camera",
+        { "cameraPermission": "Allow Investo to use your camera to capture deposit receipts." }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#0f2167"
+        }
+      ]
+    ],
+    "scheme": "investo",
+    "extra": {
+      "apiUrl": "https://investobacken.onrender.com/api",
+      "eas": { "projectId": "investo-mobile" }
+    }
+  }
+}
