@@ -2,13 +2,17 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
+import Header from '@/app/components/Header';
 
 export default function AccountantLayout() {
   const { t } = useTranslation();
   return (
     <Tabs
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
+        headerTitle: '',
+        headerStyle: { backgroundColor: COLORS.white, shadowColor: 'transparent', elevation: 0 },
+        headerLeft: () => <Header />,
         tabBarActiveTintColor: COLORS.navy,
         tabBarInactiveTintColor: COLORS.gray400,
         tabBarStyle: {

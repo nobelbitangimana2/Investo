@@ -57,16 +57,28 @@ export default function ClientDashboard() {
         <Text style={styles.greeting}>{t('topbar.welcomeBack')} {user?.name?.split(' ')[0]}</Text>
 
         <View style={styles.grid}>
-          <StatCard title={t('client.dashboard.totalDeposited')} value={formatCurrency(totalDeposited)} iconName="wallet" iconBg="#eff6ff" />
-          <StatCard title={t('client.dashboard.currentBalance')} value={formatCurrency(totalBalance)} iconName="trending-up" iconBg="#ecfdf5" iconColor={COLORS.emerald} description={t('client.dashboard.balanceDescription')} />
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.totalDeposited')} value={formatCurrency(totalDeposited)} iconName="wallet" iconBg="#eff6ff" />
+          </View>
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.currentBalance')} value={formatCurrency(totalBalance)} iconName="trending-up" iconBg="#ecfdf5" iconColor={COLORS.emerald} description={t('client.dashboard.balanceDescription')} />
+          </View>
         </View>
         <View style={styles.grid}>
-          <StatCard title={t('client.dashboard.expectedInterest')} value={formatCurrency(totalExpected)} iconName="cash" iconBg="#fffbeb" iconColor={COLORS.amber} />
-          <StatCard title={t('client.dashboard.activeInvestments')} value={activeCount} iconName="checkmark-circle" iconBg="#f5f3ff" iconColor="#7c3aed" />
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.expectedInterest')} value={formatCurrency(totalExpected)} iconName="cash" iconBg="#fffbeb" iconColor={COLORS.amber} />
+          </View>
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.activeInvestments')} value={activeCount} iconName="checkmark-circle" iconBg="#f5f3ff" iconColor="#7c3aed" />
+          </View>
         </View>
         <View style={styles.grid}>
-          <StatCard title={t('client.dashboard.pendingDeposits')} value={deposits.filter((d) => d.status === 'pending').length} iconName="time" iconBg="#fffbeb" iconColor={COLORS.amber} />
-          <StatCard title={t('client.dashboard.pendingWithdrawals')} value={withdrawals.filter((w) => w.status === 'pending').length} iconName="arrow-up-circle" iconBg="#eff6ff" iconColor={COLORS.blue} />
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.pendingDeposits')} value={deposits.filter((d) => d.status === 'pending').length} iconName="time" iconBg="#fffbeb" iconColor={COLORS.amber} />
+          </View>
+          <View style={styles.cardWrap}>
+            <StatCard title={t('client.dashboard.pendingWithdrawals')} value={withdrawals.filter((w) => w.status === 'pending').length} iconName="arrow-up-circle" iconBg="#eff6ff" iconColor={COLORS.blue} />
+          </View>
         </View>
 
         {/* Recent deposits */}
@@ -108,7 +120,8 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   content: { padding: 16, paddingBottom: 32 },
   greeting: { fontSize: 20, fontWeight: '700', color: COLORS.gray900, marginBottom: 16 },
-  grid: { flexDirection: 'row', gap: 10, marginBottom: 10 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 10, marginBottom: 10 },
+  cardWrap: { width: '48%', marginBottom: 10 },
   listItem: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   unreadRow: { backgroundColor: '#eff6ff' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.blue, marginRight: 8 },
