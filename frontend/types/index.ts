@@ -173,8 +173,19 @@ export interface AccountantPermissions {
 }
 
 // ─────────────────────────────────────────────
-// Dashboard Stats
+// Partner Bank
 // ─────────────────────────────────────────────
+
+export interface PartnerBank {
+  id: string;
+  name: string;
+  icon?: string;
+  accountName: string;
+  accountNumber: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface ClientDashboardStats {
   totalDeposited: number;

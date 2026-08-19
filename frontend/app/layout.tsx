@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale } from "next-intl/server";
 import "./globals.css";
 import { ToastContainer } from "@/components/ui/toast";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,8 +22,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang={locale} suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
         <NextIntlClientProvider messages={messages}>
-          {children}
-          <ToastContainer />
+          <ThemeProvider>
+            {children}
+            <ToastContainer />
+          </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

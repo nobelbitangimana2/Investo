@@ -112,27 +112,55 @@ export default function ClientDashboard() {
           <CardHeader><CardTitle>{t("activeInvestmentsTitle")}</CardTitle></CardHeader>
           <CardContent className="p-0">
             {activeInvestments.length === 0 ? (
-              <p className="px-6 pb-6 text-sm text-gray-400">{t("noActiveInvestments")}</p>
+              <p className="px-6 pb-6 text-sm text-gray-400 dark:text-gray-500">{t("noActiveInvestments")}</p>
             ) : (
-              <div className="divide-y divide-gray-50">
+              <div className="divide-y divide-gray-50 dark:divide-gray-800">
                 {activeInvestments.map((inv) => {
-                  const balance = inv.currentPrincipal + inv.accruedInterest;
+                  const principal = Number(inv.currentPrincipal);
+                  const accrued = Number(inv.accruedInterest);
+                  const balance = principal + accrued;
                   return (
-                    <div key={inv.id} className="flex items-center justify-between px-6 py-3">
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">
-                          {formatCurrency(inv.amount)}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {inv.investmentPeriod} · {inv.interestRate}% · matures{" "}
-                          {formatDate(inv.maturityDate)}
-                        </p>
+                    <div key={inv.id} className="px-6 py-4">
+                      {/* Header: amount + period + status */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                            {formatCurrency(Number(inv.amount))}
+                          </p>
+                          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                            {inv.investmentPeriod} · {inv.interestRate}% · matures{" "}
+                            {formatDate(inv.maturityDate)}
+                          </p>
+                        </div>
+                        <StatusBadge status={inv.status} />
                       </div>
-                      <div className="text-right">
-                        <p className="text-xs font-semibold text-emerald-600">
+                      {/* Breakdown grid */}
+                      <div className="grid grid-cols-3 gap-2 rounded-lg bg-gray-50 dark:bg-gray-800/60 p-3">
+                        <div className="text-center">
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-1">{t("investmentAmount")}</p>
+                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            {formatCurrency(Number(inv.amount))}
+                          </p>
+                        </div>
+                        <div className="text-center border-x border-gray-200 dark:border-gray-700">
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-1">{t("currentPrincipal")}</p>
+                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                            {formatCurrency(principal)}
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-[10px] text-gray-400 dark:text-gray-500 mb-1">{t("accruedInterest")}</p>
+                          <p className="text-xs font-semibold text-emerald-600">
+                            +{formatCurrency(accrued)}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Current balance */}
+                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{t("currentBalanceLabel")}</p>
+                        <p className="text-sm font-bold text-navy-700 dark:text-blue-400">
                           {formatCurrency(balance)}
                         </p>
-                        <p className="text-[10px] text-gray-400">{t("currentBalanceLabel")}</p>
                       </div>
                     </div>
                   );

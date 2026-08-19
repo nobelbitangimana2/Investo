@@ -633,3 +633,51 @@ export async function updateAccountantPermissions(
     generateReports: res.generateReports as boolean,
   };
 }
+
+// ─────────────────────────────────────────────
+// Partner Banks
+// ─────────────────────────────────────────────
+
+import type { PartnerBank } from "@/types";
+
+/** Public — no auth required */
+export async function getActivePartnerBanks(): Promise<PartnerBank[]> {
+  const res = await apiGet<unknown>("/partner-banks/active");
+  return unwrapPage<PartnerBank>(res);
+}
+
+/** Admin — requires ADMIN role */
+export async function getAllPartnerBanks(): Promise<PartnerBank[]> {
+  const res = await apiGet<unknown>("/partner-banks");
+  return unwrapPage<PartnerBank>(res);
+}
+
+export async function createPartnerBank(data: {
+  name: string;
+  icon?: string;
+  accountName?: string;
+  accountNumber: string;
+  isActive?: boolean;
+}): Promise<PartnerBank> {
+  return apiPost<PartnerBank>("/partner-banks", data);
+}
+
+export async function updatePartnerBank(
+  id: string,
+  data: Partial<{
+    name: string;
+    icon: string;
+    accountName: string;
+    accountNumber: string;
+    isActive: boolean;
+  }>,
+): Promise<PartnerBank> {
+  return apiFetch<PartnerBank>(`/partner-banks/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deletePartnerBank(id: string): Promise<void> {
+  await apiFetch(`/partner-banks/${id}`, { method: "DELETE" });
+}

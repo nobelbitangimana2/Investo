@@ -16,6 +16,7 @@ import {
   Shield,
   Percent,
   FileBarChart,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -53,6 +54,7 @@ const navItems: NavItem[] = [
   { labelKey: "clients", icon: Users, href: "/admin/clients", roles: ["admin"] },
   { labelKey: "accountants", icon: Shield, href: "/admin/accountants", roles: ["admin"] },
   { labelKey: "interestRates", icon: Percent, href: "/admin/interest-rates", roles: ["admin"] },
+  { labelKey: "partnerBanks", icon: Building2, href: "/admin/banks", roles: ["admin"] },
   { labelKey: "notifications", icon: Bell, href: "/admin/notifications", roles: ["admin"] },
   { labelKey: "reports", icon: FileBarChart, href: "/admin/reports", roles: ["admin"] },
   { labelKey: "auditLogs", icon: FileText, href: "/admin/audit-logs", roles: ["admin"] },
@@ -69,7 +71,7 @@ export function Sidebar({ role }: SidebarProps) {
   const items = navItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside className="w-64 border-r border-gray-200 bg-white min-h-screen flex flex-col">
+    <aside className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 min-h-screen flex flex-col">
       <div className="p-6 border-b border-gray-100">
         <Link href={`/${role}/dashboard`} className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy-700">
@@ -90,8 +92,8 @@ export function Sidebar({ role }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-navy-50 text-navy-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-navy-50 dark:bg-navy-900 text-navy-700 dark:text-navy-300"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
               )}
             >
               <Icon className="h-5 w-5" />

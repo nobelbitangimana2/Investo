@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/auth-store";
 import { Badge } from "@/components/ui/badge";
 import { LanguageSwitcher } from "@/components/ui/language-switcher";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { getInitials } from "@/lib/utils";
 
 interface TopbarProps {
@@ -33,26 +34,28 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
   };
 
   return (
-    <header className="h-16 border-b border-gray-200 bg-white flex items-center justify-between px-6">
+    <header className="h-16 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex items-center justify-between px-6">
       <div className="flex items-center gap-4">
         {onMenuClick && (
           <button
             onClick={onMenuClick}
-            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             aria-label="Toggle menu"
           >
-            <Menu className="h-5 w-5 text-gray-600" />
+            <Menu className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
         )}
         <div>
-          <p className="text-sm text-gray-500">{t("welcomeBack")}</p>
-          <p className="font-semibold text-gray-900">{user?.name}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t("welcomeBack")}</p>
+          <p className="font-semibold text-gray-900 dark:text-white">{user?.name}</p>
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         {/* Language switcher */}
         <LanguageSwitcher />
+        {/* Dark/Light mode toggle */}
+        <ThemeToggle />
 
         {/* Notification bell — visible for all roles */}
         <button

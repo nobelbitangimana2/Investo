@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/auth-store";
-import { submitDeposit, getInterestRates } from "@/lib/mock-api";
+import { submitDeposit, getInterestRates, getActivePartnerBanks } from "@/lib/mock-api";
 import { depositSchema, type DepositFormValues } from "@/lib/zod-schemas";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
@@ -17,9 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, calculateExpectedInterest } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import type { InterestRate } from "@/types";
+import type { InterestRate, PartnerBank } from "@/types";
 
-const BANKS = ["Bancobu", "BCB", "KCB", "Ecobank"];
 const PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
 
 export default function NewDepositPage() {
@@ -28,6 +27,7 @@ export default function NewDepositPage() {
   const toast = useToast();
   const t = useTranslations("client.deposits.form");
   const [rates, setRates] = useState<InterestRate[]>([]);
+  const [partnerBanks, setPartnerBanks] = useState<PartnerBank[]>([]);
   const [receipt, setReceipt] = useState<File | null>(null);
 
   const {
@@ -44,14 +44,20 @@ export default function NewDepositPage() {
     },
   });
 
-  useEffect(() => { getInterestRates().then(setRates); }, []);
+  useEffect(() => {
+    getInterestRates().then(setRates);
+    getActivePartnerBanks().then(setPartnerBanks);
+  }, []);
 
   const watchAmount = watch("amount");
   const watchPeriod = watch("investmentPeriod");
+  const watchBank = watch("bank");
   const selectedRate = rates.find((r) => r.investmentPeriod === watchPeriod)?.ratePercentage ?? 0;
   const expectedInterest = watchAmount && selectedRate
     ? calculateExpectedInterest(Number(watchAmount), selectedRate)
     : 0;
+  // Find the selected partner bank to show its transfer details
+  const selectedPartnerBank = partnerBanks.find((b) => b.name === watchBank) ?? null;
 
   async function onSubmit(data: DepositFormValues) {
     if (!user) return;
@@ -83,6 +89,31 @@ export default function NewDepositPage() {
         </p>
       </div>
 
+      {/* Bank transfer details autofill card */}
+      {selectedPartnerBank && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 px-4 py-4">
+          <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-3">
+            Transfer to this account
+          </p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <div>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Bank</p>
+              <p className="font-semibold text-emerald-900 dark:text-emerald-100">{selectedPartnerBank.name}</p>
+            </div>
+            <div>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Account Name</p>
+              <p className="font-semibold text-emerald-900 dark:text-emerald-100">{selectedPartnerBank.accountName}</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Account Number</p>
+              <p className="font-bold text-emerald-900 dark:text-emerald-100 font-mono tracking-widest text-base">
+                {selectedPartnerBank.accountNumber}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
         <Card>
           <CardHeader><CardTitle>{t("sectionDetails")}</CardTitle></CardHeader>
@@ -101,7 +132,16 @@ export default function NewDepositPage() {
                   <Select
                     label={t("bank")}
                     placeholder={t("bankPlaceholder")}
-                    options={BANKS.map((b) => ({ value: b, label: b }))}
+                    options={
+                      partnerBanks.length > 0
+                        ? partnerBanks.map((b) => ({ value: b.name, label: b.name }))
+                        : [
+                            { value: "Bancobu", label: "Bancobu" },
+                            { value: "BCB", label: "BCB" },
+                            { value: "KCB", label: "KCB" },
+                            { value: "Ecobank", label: "Ecobank" },
+                          ]
+                    }
                     error={errors.bank?.message}
                     {...field}
                   />

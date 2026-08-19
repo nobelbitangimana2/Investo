@@ -194,6 +194,19 @@ model AuditLog {
   @@index([timestamp])
 }
 
+model PartnerBank {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  icon          String?
+  accountName   String   @default("Investo")
+  accountNumber String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+}
+
 enum Role {
   ADMIN
   ACCOUNTANT
