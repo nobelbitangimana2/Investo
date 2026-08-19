@@ -40,7 +40,7 @@ export interface ClientProfile {
 // Enums / Literals
 // ─────────────────────────────────────────────
 
-export type Bank = "Bancobu" | "BCB" | "KCB" | "Ecobank";
+export type Bank = "Bancobu" | "BCB" | "KCB" | "Ecobank" | "Lumicash" | "Ecocash";
 
 export type InvestmentPeriod =
   | "Weekly"

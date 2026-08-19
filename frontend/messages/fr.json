@@ -304,7 +304,12 @@
         "maturityDate": "Date d'échéance estimée",
         "atRate": "au taux de {rate}%",
         "submitButton": "Soumettre le dépôt",
-        "successMessage": "Dépôt soumis avec succès ! Il sera examiné prochainement."
+        "successMessage": "Dépôt soumis avec succès ! Il sera examiné prochainement.",
+        "infoBanner": "Déposez d'abord votre argent dans l'une de nos banques agréées, puis remplissez ce formulaire et téléversez votre reçu comme preuve.",
+        "autofillLabel": "Virement vers ce compte",
+        "autofillBank": "Banque",
+        "autofillAccountName": "Nom du compte",
+        "autofillAccountNumber": "Numéro de compte"
       }
     },
 
@@ -344,6 +349,8 @@
         "bankPlaceholder": "Sélectionner une banque",
         "accountNumber": "Numéro de compte",
         "accountNumberPlaceholder": "Numéro de compte destinataire",
+        "phoneNumber": "Numéro de téléphone",
+        "phonePlaceholder": "ex. +257 79 000 000",
         "recipientName": "Nom complet du bénéficiaire",
         "recipientPlaceholder": "Nom sur le compte destinataire",
         "amount": "Montant (BIF)",
@@ -577,6 +584,10 @@
       "accountNamePlaceholder": "ex. Investo",
       "accountNumberLabel": "Numéro de compte",
       "accountNumberPlaceholder": "ex. 12345678",
+      "iconLabel": "Icône de la banque",
+      "iconHint": "Téléversez un logo pour cette banque (PNG, JPG, WebP – max 5 Mo)",
+      "iconChange": "Changer l'icône",
+      "iconUpload": "Téléverser une icône",
       "isActiveLabel": "Active (visible dans les formulaires)",
       "saveBank": "Enregistrer",
       "deleteConfirmTitle": "Supprimer la banque",
@@ -738,6 +749,15 @@
     "rejectionNoteRequired": "Veuillez fournir un motif de rejet (au moins 10 caractères).",
     "confirmButton": "Confirmer",
     "rejectButton": "Rejeter"
+  },
+
+  "partnerBanksPage": {
+    "title": "Nos banques partenaires",
+    "subtitle": "Déposez votre argent dans l'une de ces banques et utilisez les coordonnées affichées",
+    "accountName": "Nom du compte",
+    "accountNumber": "Numéro de compte",
+    "noIcon": "Pas d'icône",
+    "noBanks": "Aucune banque partenaire n'a encore été configurée."
   },
 
   "landing": {

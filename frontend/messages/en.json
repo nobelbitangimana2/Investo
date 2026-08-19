@@ -304,7 +304,12 @@
         "maturityDate": "Estimated Maturity Date",
         "atRate": "at {rate}%",
         "submitButton": "Submit Deposit",
-        "successMessage": "Deposit submitted successfully! It will be reviewed shortly."
+        "successMessage": "Deposit submitted successfully! It will be reviewed shortly.",
+        "infoBanner": "First deposit your money at one of our approved banks, then complete this form and upload your receipt as proof.",
+        "autofillLabel": "Transfer to this account",
+        "autofillBank": "Bank",
+        "autofillAccountName": "Account Name",
+        "autofillAccountNumber": "Account Number"
       }
     },
 
@@ -344,6 +349,8 @@
         "bankPlaceholder": "Select bank",
         "accountNumber": "Account Number",
         "accountNumberPlaceholder": "Destination account number",
+        "phoneNumber": "Phone Number",
+        "phonePlaceholder": "e.g. +257 79 000 000",
         "recipientName": "Recipient Full Name",
         "recipientPlaceholder": "Name on the destination account",
         "amount": "Amount (BIF)",
@@ -577,6 +584,10 @@
       "accountNamePlaceholder": "e.g. Investo",
       "accountNumberLabel": "Account Number",
       "accountNumberPlaceholder": "e.g. 12345678",
+      "iconLabel": "Bank Icon",
+      "iconHint": "Upload a logo/icon for this bank (PNG, JPG, WebP – max 5 MB)",
+      "iconChange": "Change icon",
+      "iconUpload": "Upload icon",
       "isActiveLabel": "Active (visible in forms)",
       "saveBank": "Save Bank",
       "deleteConfirmTitle": "Delete Bank",
@@ -738,6 +749,15 @@
     "rejectionNoteRequired": "Please provide a rejection reason (at least 10 characters).",
     "confirmButton": "Confirm",
     "rejectButton": "Reject"
+  },
+
+  "partnerBanksPage": {
+    "title": "Our Partner Banks",
+    "subtitle": "Deposit your money at any of these banks and use the account details shown",
+    "accountName": "Account Name",
+    "accountNumber": "Account Number",
+    "noIcon": "No icon",
+    "noBanks": "No partner banks have been configured yet."
   },
 
   "landing": {

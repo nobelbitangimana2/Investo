@@ -223,6 +223,8 @@ enum Bank {
   BCB
   KCB
   ECOBANK
+  LUMICASH
+  ECOCASH
 }
 
 enum InvestmentPeriod {

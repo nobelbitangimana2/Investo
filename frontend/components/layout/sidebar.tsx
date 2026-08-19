@@ -36,6 +36,7 @@ const navItems: NavItem[] = [
   { labelKey: "newWithdrawal", icon: ArrowUpFromLine, href: "/client/withdrawals/new", roles: ["client"] },
   { labelKey: "withdrawals", icon: ArrowUpFromLine, href: "/client/withdrawals", roles: ["client"] },
   { labelKey: "investments", icon: TrendingUp, href: "/client/investments", roles: ["client"] },
+  { labelKey: "partnerBanks", icon: Building2, href: "/client/banks", roles: ["client"] },
   { labelKey: "notifications", icon: Bell, href: "/client/notifications", roles: ["client"] },
   { labelKey: "settings", icon: Settings, href: "/client/settings", roles: ["client"] },
 
@@ -43,6 +44,7 @@ const navItems: NavItem[] = [
   { labelKey: "dashboard", icon: LayoutDashboard, href: "/accountant/dashboard", roles: ["accountant"] },
   { labelKey: "deposits", icon: PiggyBank, href: "/accountant/deposits", roles: ["accountant"] },
   { labelKey: "withdrawals", icon: ArrowUpFromLine, href: "/accountant/withdrawals", roles: ["accountant"] },
+  { labelKey: "partnerBanks", icon: Building2, href: "/accountant/banks", roles: ["accountant"] },
   { labelKey: "notifications", icon: Bell, href: "/accountant/notifications", roles: ["accountant"] },
   { labelKey: "reports", icon: FileBarChart, href: "/accountant/reports", roles: ["accountant"] },
   { labelKey: "settings", icon: Settings, href: "/accountant/settings", roles: ["accountant"] },

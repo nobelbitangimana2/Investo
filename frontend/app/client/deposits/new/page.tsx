@@ -84,28 +84,26 @@ export default function NewDepositPage() {
 
       <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 flex gap-3">
         <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-700">
-          First deposit your money at one of our approved banks, then complete this form and upload your receipt as proof.
-        </p>
+        <p className="text-sm text-blue-700">{t("infoBanner")}</p>
       </div>
 
       {/* Bank transfer details autofill card */}
       {selectedPartnerBank && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 px-4 py-4">
           <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-3">
-            Transfer to this account
+            {t("autofillLabel")}
           </p>
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
-              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Bank</p>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">{t("autofillBank")}</p>
               <p className="font-semibold text-emerald-900 dark:text-emerald-100">{selectedPartnerBank.name}</p>
             </div>
             <div>
-              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Account Name</p>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">{t("autofillAccountName")}</p>
               <p className="font-semibold text-emerald-900 dark:text-emerald-100">{selectedPartnerBank.accountName}</p>
             </div>
             <div className="col-span-2">
-              <p className="text-emerald-600 dark:text-emerald-500 text-xs">Account Number</p>
+              <p className="text-emerald-600 dark:text-emerald-500 text-xs">{t("autofillAccountNumber")}</p>
               <p className="font-bold text-emerald-900 dark:text-emerald-100 font-mono tracking-widest text-base">
                 {selectedPartnerBank.accountNumber}
               </p>

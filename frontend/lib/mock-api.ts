@@ -128,6 +128,8 @@ function normBank(b: string): Deposit["bank"] {
     BCB: "BCB",
     KCB: "KCB",
     ECOBANK: "Ecobank",
+    LUMICASH: "Lumicash",
+    ECOCASH: "Ecocash",
   };
   return map[b] ?? (b as Deposit["bank"]);
 }
@@ -152,6 +154,8 @@ function bankToEnum(b: string): string {
     BCB: "BCB",
     KCB: "KCB",
     Ecobank: "ECOBANK",
+    Lumicash: "LUMICASH",
+    Ecocash: "ECOCASH",
   };
   return map[b] ?? b;
 }
@@ -675,6 +679,15 @@ export async function updatePartnerBank(
   return apiFetch<PartnerBank>(`/partner-banks/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
+  });
+}
+
+export async function uploadPartnerBankIcon(id: string, file: File): Promise<PartnerBank> {
+  const formData = new FormData();
+  formData.append("icon", file);
+  return apiFetch<PartnerBank>(`/partner-banks/${id}/icon`, {
+    method: "POST",
+    body: formData,
   });
 }
 

@@ -18,7 +18,8 @@ import { formatCurrency } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { Investment } from "@/types";
 
-const BANKS = ["Bancobu", "BCB", "KCB", "Ecobank"];
+const BANKS = ["Bancobu", "BCB", "KCB", "Ecobank", "Lumicash", "Ecocash"];
+const MOBILE_MONEY = ["Lumicash", "Ecocash"];
 
 export default function NewWithdrawalPage() {
   const { user } = useAuthStore();
@@ -40,6 +41,7 @@ export default function NewWithdrawalPage() {
     register,
     control,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<WithdrawalFormValues>({
     resolver: zodResolver(withdrawalSchema),
@@ -48,6 +50,9 @@ export default function NewWithdrawalPage() {
       recipientName: user?.name ?? "",
     },
   });
+
+  const selectedBank = watch("bankToTransferTo");
+  const isMobileMoney = MOBILE_MONEY.includes(selectedBank ?? "");
 
   async function onSubmit(data: WithdrawalFormValues) {
     if (!user) return;
@@ -186,8 +191,8 @@ export default function NewWithdrawalPage() {
                 )}
               />
               <Input
-                label={t("accountNumber")}
-                placeholder={t("accountNumberPlaceholder")}
+                label={isMobileMoney ? t("phoneNumber") : t("accountNumber")}
+                placeholder={isMobileMoney ? t("phonePlaceholder") : t("accountNumberPlaceholder")}
                 error={errors.accountNumber?.message}
                 {...register("accountNumber")}
               />
