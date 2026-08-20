@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -74,12 +75,17 @@ export function Sidebar({ role }: SidebarProps) {
 
   return (
     <aside className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 min-h-screen flex flex-col">
-      <div className="p-6 border-b border-gray-100">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-800">
         <Link href={`/${role}/dashboard`} className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy-700">
-            <TrendingUp className="h-6 w-6 text-white" />
-          </div>
-          <span className="text-xl font-bold text-navy-900">Investo</span>
+          <Image
+            src="/icon-192.png"
+            alt="Investo logo"
+            width={40}
+            height={40}
+            className="rounded-xl object-cover"
+            priority
+          />
+          <span className="text-xl font-bold text-navy-900 dark:text-white">Investo</span>
         </Link>
       </div>
 
