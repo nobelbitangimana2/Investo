@@ -562,7 +562,7 @@
       "addTitle": "Ajouter un nouveau taux",
       "investmentPeriod": "Période d'investissement",
       "periodPlaceholder": "Sélectionner une période",
-      "periodTypePlaceholder": "ex. 2 Semaines, 3 Mois, 10 Ans…",
+      "periodTypePlaceholder": "ex. 3 Mois ou 2 Ans",
       "rateLabel": "Taux d'intérêt (%)",
       "ratePlaceholder": "ex. 20",
       "saveRate": "Enregistrer le taux",

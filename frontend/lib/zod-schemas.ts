@@ -49,6 +49,7 @@ const fallback: TFunc = (key: string) => {
     "validation.emailInvalidAcc":     "Invalid email",
     "validation.passwordMinAcc":      "Password must be at least 8 characters",
     "validation.periodReq":           "Period is required",
+    "validation.periodFormat":        "Must be a number followed by 'month(s)' or 'year(s)' — e.g. '3 Months' or '1 Year'",
     "validation.rateNumber":          "Rate must be a number",
     "validation.ratePositive":        "Rate must be positive",
     "validation.rateMax":             "Rate seems too high",
@@ -135,7 +136,13 @@ export const accountantSchema = z.object({
 });
 
 export const interestRateSchema = z.object({
-  investmentPeriod: z.enum(PERIODS, { required_error: fallback("validation.periodReq") }),
+  // Accepts: "1 Month", "2 Months", "6 months", "1 Year", "3 Years", "10 years" (case-insensitive)
+  investmentPeriod: z.string()
+    .min(1, fallback("validation.periodReq"))
+    .regex(
+      /^\d+\s+(month|months|year|years)$/i,
+      fallback("validation.periodFormat"),
+    ),
   ratePercentage:   z.number({ invalid_type_error: fallback("validation.rateNumber") })
                      .positive(fallback("validation.ratePositive"))
                      .max(500, fallback("validation.rateMax")),

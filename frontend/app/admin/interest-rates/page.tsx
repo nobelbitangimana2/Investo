@@ -71,15 +71,20 @@ export default function AdminInterestRatesPage() {
 
   // ── Save (create or update) ────────────────────────────────────────────
   async function onSubmit(data: InterestRateFormValues) {
+    // Normalise period: "3 months" → "3 Months", "1 year" → "1 Year"
+    const normalised = data.investmentPeriod.trim().replace(
+      /^(\d+)\s+(month|months|year|years)$/i,
+      (_, n, unit) => `${n} ${unit.charAt(0).toUpperCase() + unit.slice(1).toLowerCase()}`
+    );
     try {
-      const saved = await upsertInterestRate(data.investmentPeriod, data.ratePercentage);
+      const saved = await upsertInterestRate(normalised, data.ratePercentage);
       setRates((prev) => {
         const exists = prev.find((r) => r.investmentPeriod === saved.investmentPeriod);
         return exists
           ? prev.map((r) => (r.investmentPeriod === saved.investmentPeriod ? saved : r))
           : [...prev, saved];
       });
-      toast.success(t("rateUpdated", { period: data.investmentPeriod, rate: data.ratePercentage }));
+      toast.success(t("rateUpdated", { period: normalised, rate: data.ratePercentage }));
       closeModal();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Failed to save rate");
@@ -208,6 +213,12 @@ export default function AdminInterestRatesPage() {
                 },
               })}
             />
+            {/* Format hint */}
+            {!errors.investmentPeriod && !isDuplicate && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Enter a number followed by <strong>Months</strong> or <strong>Years</strong> — e.g. <em>3 Months</em>, <em>1 Year</em>, <em>18 Months</em>
+              </p>
+            )}
             {/* Live duplicate warning — uses watched form value, no DOM query */}
             {isDuplicate && (
               <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 mt-1">

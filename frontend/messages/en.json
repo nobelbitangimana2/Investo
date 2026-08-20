@@ -562,7 +562,7 @@
       "addTitle": "Add New Rate",
       "investmentPeriod": "Investment Period",
       "periodPlaceholder": "Select period",
-      "periodTypePlaceholder": "e.g. 2 Weeks, 3 Months, 10 Years…",
+      "periodTypePlaceholder": "e.g. 3 Months or 2 Years",
       "rateLabel": "Interest Rate (%)",
       "ratePlaceholder": "e.g. 20",
       "saveRate": "Save Rate",
