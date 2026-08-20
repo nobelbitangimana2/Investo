@@ -454,10 +454,14 @@ export async function submitWithdrawal(
   _clientId: string,
   data: WithdrawalFormData,
 ): Promise<Withdrawal> {
+  const isMobile = ["Lumicash", "Ecocash"].includes(data.bankToTransferTo ?? "");
   const res = await apiPost<Record<string, unknown>>("/withdrawals", {
     fullName: data.fullName,
     bankToTransferTo: bankToEnum(data.bankToTransferTo),
-    accountNumber: data.accountNumber,
+    // Send phoneNumber for mobile money, accountNumber for banks
+    ...(isMobile
+      ? { phoneNumber: (data as Record<string, unknown>).phoneNumber }
+      : { accountNumber: data.accountNumber }),
     recipientName: data.recipientName,
     amount: data.amount,
   });

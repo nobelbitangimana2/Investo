@@ -200,12 +200,21 @@ export default function NewWithdrawalPage() {
               />
 
               {/* Account number OR phone number depending on selection */}
-              <Input
-                label={isMobileMoney ? t("phoneNumber") : t("accountNumber")}
-                placeholder={isMobileMoney ? t("phonePlaceholder") : t("accountNumberPlaceholder")}
-                error={errors.accountNumber?.message}
-                {...register("accountNumber")}
-              />
+              {isMobileMoney ? (
+                <Input
+                  label={t("phoneNumber")}
+                  placeholder={t("phonePlaceholder")}
+                  error={errors.phoneNumber?.message}
+                  {...register("phoneNumber")}
+                />
+              ) : (
+                <Input
+                  label={t("accountNumber")}
+                  placeholder={t("accountNumberPlaceholder")}
+                  error={errors.accountNumber?.message}
+                  {...register("accountNumber")}
+                />
+              )}
             </div>
 
             <Input

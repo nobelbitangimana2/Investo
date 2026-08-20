@@ -79,24 +79,37 @@ export const registerSchema = z
 
 export const depositSchema = z.object({
   fullName:         z.string().min(2, fallback("validation.fullNameMin")),
-  bank:             z.enum(BANKS, { required_error: fallback("validation.selectBank") }),
+  bank:             z.string().min(1, fallback("validation.selectBank")),
   accountNumber:    z.string().min(4, fallback("validation.accountNumberReq")),
   amount:           z.number({ invalid_type_error: fallback("validation.amountNumber") })
                      .positive(fallback("validation.amountPositive"))
                      .min(100000, fallback("validation.depositMin")),
   depositDate:      z.string().min(1, fallback("validation.depositDateReq")),
-  investmentPeriod: z.enum(PERIODS, { required_error: fallback("validation.selectPeriod") }),
+  investmentPeriod: z.string().min(1, fallback("validation.selectPeriod")),
   referenceNumber:  z.string().min(4, fallback("validation.referenceReq")),
 });
 
 export const withdrawalSchema = z.object({
-  fullName:        z.string().min(2, fallback("validation.fullNameReq")),
-  bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.selectBank") }),
-  accountNumber:   z.string().min(4, fallback("validation.accountNumberReq")),
-  recipientName:   z.string().min(2, fallback("validation.recipientNameReq")),
-  amount:          z.number({ invalid_type_error: fallback("validation.amountNumber") })
-                    .positive(fallback("validation.amountPositive"))
-                    .min(50000, fallback("validation.withdrawalMin")),
+  fullName:         z.string().min(2, fallback("validation.fullNameReq")),
+  bankToTransferTo: z.string().min(1, fallback("validation.selectBank")),
+  // accountNumber used for bank transfers; phoneNumber used for mobile money
+  accountNumber:    z.string().optional(),
+  phoneNumber:      z.string().optional(),
+  recipientName:    z.string().min(2, fallback("validation.recipientNameReq")),
+  amount:           z.number({ invalid_type_error: fallback("validation.amountNumber") })
+                     .positive(fallback("validation.amountPositive"))
+                     .min(50000, fallback("validation.withdrawalMin")),
+}).superRefine((data, ctx) => {
+  const isMobile = ["Lumicash", "Ecocash"].includes(data.bankToTransferTo);
+  if (isMobile) {
+    if (!data.phoneNumber || data.phoneNumber.trim().length < 8) {
+      ctx.addIssue({ code: "custom", path: ["phoneNumber"], message: fallback("validation.accountNumberReq") });
+    }
+  } else {
+    if (!data.accountNumber || data.accountNumber.trim().length < 4) {
+      ctx.addIssue({ code: "custom", path: ["accountNumber"], message: fallback("validation.accountNumberReq") });
+    }
+  }
 });
 
 export const rejectSchema = z.object({
@@ -138,23 +151,23 @@ export function createSchemas(t: TFunc) {
       password: z.string().min(1, tr("validation.passwordRequired")),
     }),
     withdrawal: z.object({
-      fullName:        z.string().min(2, tr("validation.fullNameReq")),
-      bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: tr("validation.selectBank") }),
-      accountNumber:   z.string().min(4, tr("validation.accountNumberReq")),
-      recipientName:   z.string().min(2, tr("validation.recipientNameReq")),
-      amount:          z.number({ invalid_type_error: tr("validation.amountNumber") })
-                        .positive(tr("validation.amountPositive"))
-                        .min(50000, tr("validation.withdrawalMin")),
+      fullName:         z.string().min(2, tr("validation.fullNameReq")),
+      bankToTransferTo: z.string().min(1, tr("validation.selectBank")),
+      accountNumber:    z.string().min(4, tr("validation.accountNumberReq")),
+      recipientName:    z.string().min(2, tr("validation.recipientNameReq")),
+      amount:           z.number({ invalid_type_error: tr("validation.amountNumber") })
+                         .positive(tr("validation.amountPositive"))
+                         .min(50000, tr("validation.withdrawalMin")),
     }),
     deposit: z.object({
       fullName:         z.string().min(2, tr("validation.fullNameMin")),
-      bank:             z.enum(BANKS, { required_error: tr("validation.selectBank") }),
+      bank:             z.string().min(1, tr("validation.selectBank")),
       accountNumber:    z.string().min(4, tr("validation.accountNumberReq")),
       amount:           z.number({ invalid_type_error: tr("validation.amountNumber") })
                          .positive(tr("validation.amountPositive"))
                          .min(100000, tr("validation.depositMin")),
       depositDate:      z.string().min(1, tr("validation.depositDateReq")),
-      investmentPeriod: z.enum(PERIODS, { required_error: tr("validation.selectPeriod") }),
+      investmentPeriod: z.string().min(1, tr("validation.selectPeriod")),
       referenceNumber:  z.string().min(4, tr("validation.referenceReq")),
     }),
   };

@@ -139,23 +139,33 @@ model Investment {
 }
 
 model Withdrawal {
-  id               String           @id @default(cuid())
+  id               String                    @id @default(cuid())
   clientId         String
   fullName         String
   bankToTransferTo Bank
   accountNumber    String
   recipientName    String
-  amount           Decimal          @db.Decimal(18, 2)
-  status           WithdrawalStatus @default(PENDING)
+  amount           Decimal                   @db.Decimal(18, 2)
+  status           WithdrawalStatus          @default(PENDING)
   rejectionNote    String?
-  requestedAt      DateTime         @default(now())
+  requestedAt      DateTime                  @default(now())
   confirmedAt      DateTime?
-  updatedAt        DateTime         @updatedAt
-  client           User             @relation(fields: [clientId], references: [id])
+  updatedAt        DateTime                  @updatedAt
+  client           User                      @relation(fields: [clientId], references: [id])
+  mobileMoney      MobileMoneyWithdrawal?
 
   @@index([clientId])
   @@index([status])
   @@index([requestedAt])
+}
+
+/// Stores phone number for Lumicash / Ecocash withdrawals
+model MobileMoneyWithdrawal {
+  id           String     @id @default(cuid())
+  withdrawalId String     @unique
+  phoneNumber  String
+  provider     Bank       // LUMICASH or ECOCASH
+  withdrawal   Withdrawal @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
 }
 
 model InterestRate {

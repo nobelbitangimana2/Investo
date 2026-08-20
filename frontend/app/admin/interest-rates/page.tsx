@@ -103,11 +103,10 @@ export default function AdminInterestRatesPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
-        {availablePeriods.length > 0 && (
-          <Button onClick={openAdd}>
-            <Plus className="h-4 w-4 mr-1" /> {t("addUpdate")}
-          </Button>
-        )}
+        {/* Always show Add button — modal will show available periods */}
+        <Button onClick={openAdd}>
+          <Plus className="h-4 w-4 mr-1" /> {t("addUpdate")}
+        </Button>
       </div>
 
       {/* Table */}
@@ -200,6 +199,10 @@ export default function AdminInterestRatesPage() {
                 {editTarget.investmentPeriod}
               </p>
             </div>
+          ) : availablePeriods.length === 0 ? (
+            <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
+              All investment periods already have a rate configured. Edit an existing rate below.
+            </p>
           ) : (
             <Controller
               name="investmentPeriod"

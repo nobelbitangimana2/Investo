@@ -1,6 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsString, IsNumber, Min, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsEnum, IsString, IsNumber, IsOptional, Min, MinLength } from 'class-validator';
 import { Bank } from '@prisma/client';
+
+const MOBILE_MONEY_PROVIDERS: Bank[] = [Bank.LUMICASH, Bank.ECOCASH];
 
 export class CreateWithdrawalDto {
   @ApiProperty({ example: 'Kevin Mutabazi' })
@@ -12,9 +14,15 @@ export class CreateWithdrawalDto {
   @IsEnum(Bank)
   bankToTransferTo: Bank;
 
-  @ApiProperty({ example: 'BCB-00123456' })
+  @ApiPropertyOptional({ example: 'BCB-00123456', description: 'Required for bank transfers' })
+  @IsOptional()
   @IsString()
-  accountNumber: string;
+  accountNumber?: string;
+
+  @ApiPropertyOptional({ example: '+257 79 123 456', description: 'Required for Lumicash / Ecocash' })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
 
   @ApiProperty({ example: 'Kevin Mutabazi' })
   @IsString()
@@ -25,4 +33,9 @@ export class CreateWithdrawalDto {
   @IsNumber()
   @Min(1000)
   amount: number;
+
+  /** Derived helper — true when bankToTransferTo is a mobile money provider */
+  get isMobileMoney(): boolean {
+    return MOBILE_MONEY_PROVIDERS.includes(this.bankToTransferTo);
+  }
 }

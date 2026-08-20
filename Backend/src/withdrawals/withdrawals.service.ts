@@ -11,7 +11,9 @@ import { CreateWithdrawalDto } from './dto/create-withdrawal.dto';
 import { RejectWithdrawalDto } from './dto/reject-withdrawal.dto';
 import { FilterWithdrawalsDto } from './dto/filter-withdrawals.dto';
 import { PaginatedResponseDto } from '../common/dto/pagination.dto';
-import { Investment, WithdrawalStatus, InvestmentStatus } from '@prisma/client';
+import { Bank, Investment, WithdrawalStatus, InvestmentStatus } from '@prisma/client';
+
+const MOBILE_MONEY_BANKS: Bank[] = [Bank.LUMICASH, Bank.ECOCASH];
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Withdrawal allocation logic
@@ -93,12 +95,24 @@ export class WithdrawalsService {
         clientId,
         fullName: dto.fullName,
         bankToTransferTo: dto.bankToTransferTo,
-        accountNumber: dto.accountNumber,
+        // For mobile money, store a placeholder in accountNumber and save phone separately
+        accountNumber: dto.isMobileMoney ? (dto.phoneNumber ?? '') : (dto.accountNumber ?? ''),
         recipientName: dto.recipientName,
         amount: dto.amount,
         status: WithdrawalStatus.PENDING,
       },
     });
+
+    // Save phone number in separate table for Lumicash / Ecocash
+    if (dto.isMobileMoney && dto.phoneNumber) {
+      await this.prisma.mobileMoneyWithdrawal.create({
+        data: {
+          withdrawalId: withdrawal.id,
+          phoneNumber: dto.phoneNumber,
+          provider: dto.bankToTransferTo,
+        },
+      });
+    }
 
     // Notify staff
     const client = await this.prisma.user.findUnique({
@@ -137,7 +151,10 @@ export class WithdrawalsService {
     const [withdrawals, total] = await Promise.all([
       this.prisma.withdrawal.findMany({
         where,
-        include: { client: { select: { id: true, name: true, email: true } } },
+        include: {
+          client: { select: { id: true, name: true, email: true } },
+          mobileMoney: true,
+        },
         skip,
         take: limit,
         orderBy: { requestedAt: 'desc' },
@@ -157,7 +174,10 @@ export class WithdrawalsService {
   async findOne(id: string) {
     const w = await this.prisma.withdrawal.findUnique({
       where: { id },
-      include: { client: { select: { id: true, name: true, email: true } } },
+      include: {
+        client: { select: { id: true, name: true, email: true } },
+        mobileMoney: true,
+      },
     });
     if (!w) throw new NotFoundException(`Withdrawal ${id} not found`);
     return w;
