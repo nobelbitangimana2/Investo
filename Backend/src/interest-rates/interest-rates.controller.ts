@@ -1,13 +1,12 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Role, InvestmentPeriod } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { InterestRatesService } from './interest-rates.service';
 import { UpsertRateDto } from './dto/upsert-rate.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '@prisma/client';
 
 @ApiTags('interest-rates')
 @ApiBearerAuth('access-token')
@@ -33,9 +32,9 @@ export class InterestRatesController {
   @Patch(':period')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Update a specific period rate (admin)' })
+  @ApiOperation({ summary: 'Update a specific period rate by period name (admin)' })
   update(
-    @Param('period') period: InvestmentPeriod,
+    @Param('period') period: string,
     @Body() dto: UpsertRateDto,
     @CurrentUser() admin: User,
   ) {
@@ -45,9 +44,9 @@ export class InterestRatesController {
   @Delete(':period')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Delete an interest rate for a period (admin)' })
+  @ApiOperation({ summary: 'Delete an interest rate by period name (admin)' })
   remove(
-    @Param('period') period: InvestmentPeriod,
+    @Param('period') period: string,
     @CurrentUser() admin: User,
   ) {
     return this.service.delete(period, admin.id);

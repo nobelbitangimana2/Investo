@@ -517,7 +517,8 @@ export async function getInterestRates(): Promise<InterestRate[]> {
   const rates = unwrapPage<Record<string, unknown>>(res);
   return rates.map((r) => ({
     id: r.id as string,
-    investmentPeriod: normPeriod(r.investmentPeriod as string),
+    // investmentPeriod is now a plain string stored exactly as the admin typed it
+    investmentPeriod: r.investmentPeriod as string,
     ratePercentage: toNumber(r.ratePercentage),
     dateUpdated: (r.updatedAt ?? r.dateUpdated) as string,
   }));
@@ -527,20 +528,21 @@ export async function upsertInterestRate(
   period: string,
   ratePercentage: number,
 ): Promise<InterestRate> {
+  // No enum conversion needed — period is stored as free-text
   const res = await apiPost<Record<string, unknown>>("/interest-rates", {
-    investmentPeriod: periodToEnum(period),
+    investmentPeriod: period.trim(),
     ratePercentage,
   });
   return {
     id: res.id as string,
-    investmentPeriod: normPeriod(res.investmentPeriod as string),
+    investmentPeriod: res.investmentPeriod as string,
     ratePercentage: toNumber(res.ratePercentage),
     dateUpdated: (res.updatedAt ?? res.dateUpdated) as string,
   };
 }
 
 export async function deleteInterestRate(period: string): Promise<void> {
-  await apiFetch(`/interest-rates/${periodToEnum(period)}`, { method: "DELETE" });
+  await apiFetch(`/interest-rates/${encodeURIComponent(period)}`, { method: "DELETE" });
 }
 
 // ─────────────────────────────────────────────

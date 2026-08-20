@@ -1,25 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Check, X, AlertCircle } from "lucide-react";
 import { getInterestRates, upsertInterestRate, deleteInterestRate } from "@/lib/mock-api";
 import { interestRateSchema, type InterestRateFormValues } from "@/lib/zod-schemas";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/hooks/useToast";
 import { formatDate } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { InterestRate } from "@/types";
 
-const ALL_PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
-
-// ── Mode: "add" opens a blank form with a period dropdown
-//          "edit" opens a pre-filled form with the period locked (read-only)
 type ModalMode = "add" | "edit" | null;
 
 export default function AdminInterestRatesPage() {
@@ -34,10 +29,10 @@ export default function AdminInterestRatesPage() {
 
   const {
     register,
-    control,
     handleSubmit,
     reset,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<InterestRateFormValues>({ resolver: zodResolver(interestRateSchema) });
 
@@ -45,13 +40,16 @@ export default function AdminInterestRatesPage() {
     getInterestRates().then((r) => { setRates(r); setLoading(false); });
   }, []);
 
-  // Periods that don't yet have a rate — shown in the Add dropdown
-  const configuredPeriods = new Set(rates.map((r) => r.investmentPeriod));
-  const unconfiguredPeriods = ALL_PERIODS.filter((p) => !configuredPeriods.has(p));
+  // Set of period names already in the DB (case-insensitive check)
+  const configuredPeriods = new Set(rates.map((r) => r.investmentPeriod.toLowerCase()));
+
+  // Watch the period field for live duplicate detection in the Add modal
+  const watchedPeriod = watch("investmentPeriod") ?? "";
+  const isDuplicate = watchedPeriod.trim().length >= 2 && configuredPeriods.has(watchedPeriod.trim().toLowerCase());
 
   // ── Open Add modal ─────────────────────────────────────────────────────
   function openAdd() {
-    reset({ investmentPeriod: undefined, ratePercentage: undefined });
+    reset({ investmentPeriod: "", ratePercentage: undefined });
     setEditTarget(null);
     setModalMode("add");
   }
@@ -104,8 +102,6 @@ export default function AdminInterestRatesPage() {
     }
   }
 
-  const allConfigured = unconfiguredPeriods.length === 0;
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -114,12 +110,9 @@ export default function AdminInterestRatesPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
-        {/* Add Rate button — only when there are unconfigured periods */}
-        {!allConfigured && (
-          <Button onClick={openAdd}>
-            <Plus className="h-4 w-4 mr-1" /> {t("addRate")}
-          </Button>
-        )}
+        <Button onClick={openAdd}>
+          <Plus className="h-4 w-4 mr-1" /> {t("addRate")}
+        </Button>
       </div>
 
       {/* Rates table */}
@@ -192,26 +185,37 @@ export default function AdminInterestRatesPage() {
         </CardContent>
       </Card>
 
-      {/* ── ADD modal — period dropdown + rate input ─────────────────────── */}
+      {/* ── ADD modal — free-text period input + rate input ────────────── */}
       <Modal
         open={modalMode === "add"}
         onClose={closeModal}
         title={t("addTitle")}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          <Controller
-            name="investmentPeriod"
-            control={control}
-            render={({ field }) => (
-              <Select
-                label={t("investmentPeriod")}
-                placeholder={t("periodPlaceholder")}
-                options={unconfiguredPeriods.map((p) => ({ value: p, label: p }))}
-                error={errors.investmentPeriod?.message}
-                {...field}
-              />
+          {/* Period — free text, validated for duplicates inline */}
+          <div className="space-y-1">
+            <Input
+              label={t("investmentPeriod")}
+              placeholder={t("periodTypePlaceholder")}
+              error={errors.investmentPeriod?.message}
+              {...register("investmentPeriod", {
+                validate: (val) => {
+                  if (!val || val.trim().length < 2) return "Period name is required";
+                  if (configuredPeriods.has(val.trim().toLowerCase())) {
+                    return `"${val.trim()}" already has a rate configured. Use Edit to change it.`;
+                  }
+                  return true;
+                },
+              })}
+            />
+            {/* Live duplicate warning — uses watched form value, no DOM query */}
+            {isDuplicate && (
+              <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400 mt-1">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                <span>This period already exists. Click <strong>Edit ✏️</strong> on that row to change its rate.</span>
+              </div>
             )}
-          />
+          </div>
           <Input
             label={t("rateLabel")}
             type="number"
@@ -225,7 +229,7 @@ export default function AdminInterestRatesPage() {
             <Button type="button" variant="outline" onClick={closeModal}>
               <X className="h-4 w-4 mr-1" /> Cancel
             </Button>
-            <Button type="submit" loading={isSubmitting}>
+            <Button type="submit" loading={isSubmitting} disabled={isDuplicate}>
               <Check className="h-4 w-4 mr-1" /> {t("saveRate")}
             </Button>
           </div>

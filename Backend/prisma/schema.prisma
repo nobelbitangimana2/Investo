@@ -169,10 +169,10 @@ model MobileMoneyWithdrawal {
 }
 
 model InterestRate {
-  id               String           @id @default(cuid())
-  investmentPeriod InvestmentPeriod @unique
-  ratePercentage   Decimal          @db.Decimal(5, 2)
-  updatedAt        DateTime         @updatedAt
+  id               String   @id @default(cuid())
+  investmentPeriod String   @unique   // Free-text, e.g. "Weekly", "2 Weeks", "10 Years"
+  ratePercentage   Decimal  @db.Decimal(5, 2)
+  updatedAt        DateTime @updatedAt
 }
 
 model Notification {
