@@ -48,4 +48,15 @@ export class InterestRatesService {
 
     return rate;
   }
+
+  async delete(period: InvestmentPeriod, adminId: string) {
+    const existing = await this.prisma.interestRate.findUnique({
+      where: { investmentPeriod: period },
+    });
+    if (!existing) throw new NotFoundException(`No rate configured for ${period}`);
+
+    await this.prisma.interestRate.delete({ where: { investmentPeriod: period } });
+    await this.auditLogs.log(adminId, 'DELETE_INTEREST_RATE', `Deleted ${period} interest rate`, existing.id, 'interestRate');
+    return { message: `Interest rate for ${period} deleted.` };
+  }
 }

@@ -309,7 +309,10 @@
         "autofillLabel": "Virement vers ce compte",
         "autofillBank": "Banque",
         "autofillAccountName": "Nom du compte",
-        "autofillAccountNumber": "Numéro de compte"
+        "autofillAccountNumber": "Numéro de compte",
+        "accountMismatchWarning": "Incorrect. Le numéro de compte Investo dans cette banque est : {correct}",
+        "accountMismatchError": "Le numéro de compte ne correspond pas. Utilisez le numéro Investo affiché ci-dessus.",
+        "accountMatchConfirm": "Numéro de compte correct."
       }
     },
 
@@ -328,7 +331,7 @@
       "form": {
         "title": "Demande de retrait",
         "subtitle": "Demandez un virement depuis votre compte d'investissement",
-        "processingNotice": "Les demandes de retrait sont examinées par notre équipe avant le virement des fonds. Le traitement peut prendre 1 à 3 jours ouvrables.",
+        "processingNotice": "Les demandes de retrait sont examinées par notre équipe avant le virement des fonds. Le traitement prend jusqu'à 24 heures.",
         "availableBalance": "Votre solde disponible",
         "totalBalance": "Solde total",
         "maxWithdrawable": "Montant max retirable",
@@ -562,7 +565,10 @@
       "rateLabel": "Taux d'intérêt (%)",
       "ratePlaceholder": "ex. 20",
       "saveRate": "Enregistrer le taux",
-      "rateUpdated": "Le taux d'intérêt pour \"{period}\" a été mis à jour à {rate}%."
+      "rateUpdated": "Le taux d'intérêt pour \"{period}\" a été mis à jour à {rate}%.",
+      "rateDeleted": "Le taux pour \"{period}\" a été supprimé.",
+      "deleteConfirmTitle": "Supprimer le taux",
+      "deleteConfirmMessage": "Voulez-vous vraiment supprimer le taux pour \"{period}\" ?"
     },
 
     "banks": {

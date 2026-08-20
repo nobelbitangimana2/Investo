@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Role, InvestmentPeriod } from '@prisma/client';
 import { InterestRatesService } from './interest-rates.service';
@@ -40,5 +40,16 @@ export class InterestRatesController {
     @CurrentUser() admin: User,
   ) {
     return this.service.upsert({ ...dto, investmentPeriod: period }, admin.id);
+  }
+
+  @Delete(':period')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete an interest rate for a period (admin)' })
+  remove(
+    @Param('period') period: InvestmentPeriod,
+    @CurrentUser() admin: User,
+  ) {
+    return this.service.delete(period, admin.id);
   }
 }

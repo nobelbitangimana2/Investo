@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, Info, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/auth-store";
 import { submitDeposit, getInterestRates, getActivePartnerBanks } from "@/lib/mock-api";
@@ -52,15 +52,32 @@ export default function NewDepositPage() {
   const watchAmount = watch("amount");
   const watchPeriod = watch("investmentPeriod");
   const watchBank = watch("bank");
+  const watchAccountNumber = watch("accountNumber");
+
   const selectedRate = rates.find((r) => r.investmentPeriod === watchPeriod)?.ratePercentage ?? 0;
-  const expectedInterest = watchAmount && selectedRate
-    ? calculateExpectedInterest(Number(watchAmount), selectedRate)
-    : 0;
-  // Find the selected partner bank to show its transfer details
+  const expectedInterest =
+    watchAmount && selectedRate
+      ? calculateExpectedInterest(Number(watchAmount), selectedRate)
+      : 0;
+
+  // Find selected partner bank — used for autofill card and account validation
   const selectedPartnerBank = partnerBanks.find((b) => b.name === watchBank) ?? null;
+
+  // Account number mismatch check (only validate when both are filled)
+  const accountMismatch =
+    selectedPartnerBank &&
+    watchAccountNumber &&
+    watchAccountNumber.trim() !== selectedPartnerBank.accountNumber.trim();
 
   async function onSubmit(data: DepositFormValues) {
     if (!user) return;
+
+    // Block submit if account number doesn't match
+    if (accountMismatch) {
+      toast.error(t("accountMismatchError"));
+      return;
+    }
+
     try {
       await submitDeposit(user.id, { ...data, receipt: receipt ?? undefined });
       toast.success(t("successMessage"));
@@ -72,22 +89,24 @@ export default function NewDepositPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      {/* Back + title */}
       <div className="flex items-center gap-3">
-        <Link href="/client/deposits" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <ArrowLeft className="h-5 w-5 text-gray-600" />
+        <Link href="/client/deposits" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <ArrowLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
-          <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 flex gap-3">
+      {/* Info banner */}
+      <div className="rounded-xl border border-blue-100 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800 px-4 py-3 flex gap-3">
         <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-blue-700">{t("infoBanner")}</p>
+        <p className="text-sm text-blue-700 dark:text-blue-300">{t("infoBanner")}</p>
       </div>
 
-      {/* Bank transfer details autofill card */}
+      {/* Autofill card — shows Investo account details for the selected bank */}
       {selectedPartnerBank && (
         <div className="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-950/30 dark:border-emerald-800 px-4 py-4">
           <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-3">
@@ -122,7 +141,9 @@ export default function NewDepositPage() {
               error={errors.fullName?.message}
               {...register("fullName")}
             />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Bank selector — dynamic from partner banks */}
               <Controller
                 name="bank"
                 control={control}
@@ -145,13 +166,35 @@ export default function NewDepositPage() {
                   />
                 )}
               />
-              <Input
-                label={t("accountNumber")}
-                placeholder={t("accountNumberPlaceholder")}
-                error={errors.accountNumber?.message}
-                {...register("accountNumber")}
-              />
+
+              {/* Account number — validated against admin-configured number */}
+              <div className="space-y-1">
+                <Input
+                  label={t("accountNumber")}
+                  placeholder={
+                    selectedPartnerBank
+                      ? selectedPartnerBank.accountNumber
+                      : t("accountNumberPlaceholder")
+                  }
+                  error={errors.accountNumber?.message}
+                  {...register("accountNumber")}
+                />
+                {/* Mismatch warning */}
+                {accountMismatch && (
+                  <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span>{t("accountMismatchWarning", { correct: selectedPartnerBank!.accountNumber })}</span>
+                  </div>
+                )}
+                {/* Match confirmation */}
+                {selectedPartnerBank && watchAccountNumber && !accountMismatch && (
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">
+                    ✓ {t("accountMatchConfirm")}
+                  </p>
+                )}
+              </div>
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 label={t("amount")}
@@ -168,6 +211,7 @@ export default function NewDepositPage() {
                 {...register("depositDate")}
               />
             </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Controller
                 name="investmentPeriod"
@@ -192,35 +236,34 @@ export default function NewDepositPage() {
           </CardContent>
         </Card>
 
+        {/* Interest preview */}
         {watchAmount > 0 && watchPeriod && (
-          <Card className="border-emerald-100 bg-emerald-50">
+          <Card className="border-emerald-100 bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900">
             <CardContent className="pt-6">
-              <p className="text-sm font-semibold text-emerald-800 mb-3">{t("previewCard")}</p>
+              <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300 mb-3">{t("previewCard")}</p>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <p className="text-xs text-emerald-600">Principal</p>
-                  <p className="font-bold text-emerald-900 text-sm mt-1">{formatCurrency(Number(watchAmount))}</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">Principal</p>
+                  <p className="font-bold text-emerald-900 dark:text-emerald-100 text-sm mt-1">{formatCurrency(Number(watchAmount))}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-emerald-600">{t("atRate", { rate: selectedRate })}</p>
-                  <p className="font-bold text-emerald-900 text-sm mt-1">{selectedRate}%</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">{t("atRate", { rate: selectedRate })}</p>
+                  <p className="font-bold text-emerald-900 dark:text-emerald-100 text-sm mt-1">{selectedRate}%</p>
                 </div>
                 <div>
-                  <p className="text-xs text-emerald-600">{t("estimatedInterest")}</p>
-                  <p className="font-bold text-emerald-900 text-sm mt-1">{formatCurrency(expectedInterest)}</p>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400">{t("estimatedInterest")}</p>
+                  <p className="font-bold text-emerald-900 dark:text-emerald-100 text-sm mt-1">{formatCurrency(expectedInterest)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
 
+        {/* Receipt upload */}
         <Card>
           <CardHeader><CardTitle>{t("receiptUpload")}</CardTitle></CardHeader>
           <CardContent>
-            <FileUpload
-              label={t("receiptDesc")}
-              onChange={setReceipt}
-            />
+            <FileUpload label={t("receiptDesc")} onChange={setReceipt} />
           </CardContent>
         </Card>
 
@@ -228,7 +271,7 @@ export default function NewDepositPage() {
           <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button type="submit" loading={isSubmitting}>
+          <Button type="submit" loading={isSubmitting} disabled={!!accountMismatch}>
             {t("submitButton")}
           </Button>
         </div>

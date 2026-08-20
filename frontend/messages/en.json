@@ -309,7 +309,10 @@
         "autofillLabel": "Transfer to this account",
         "autofillBank": "Bank",
         "autofillAccountName": "Account Name",
-        "autofillAccountNumber": "Account Number"
+        "autofillAccountNumber": "Account Number",
+        "accountMismatchWarning": "Incorrect. Investo's account number at this bank is: {correct}",
+        "accountMismatchError": "Account number doesn't match. Please use Investo's account number shown above.",
+        "accountMatchConfirm": "Account number matches."
       }
     },
 
@@ -328,7 +331,7 @@
       "form": {
         "title": "Request Withdrawal",
         "subtitle": "Request a transfer from your investment account",
-        "processingNotice": "Withdrawal requests are reviewed by our team before funds are transferred. Processing may take 1–3 business days.",
+        "processingNotice": "Withdrawal requests are reviewed by our team before funds are transferred. Processing takes up to 24 hours.",
         "availableBalance": "Your Available Balance",
         "totalBalance": "Total Balance",
         "maxWithdrawable": "Max withdrawable",
@@ -562,7 +565,10 @@
       "rateLabel": "Interest Rate (%)",
       "ratePlaceholder": "e.g. 20",
       "saveRate": "Save Rate",
-      "rateUpdated": "Interest rate for \"{period}\" updated to {rate}%."
+      "rateUpdated": "Interest rate for \"{period}\" updated to {rate}%.",
+      "rateDeleted": "Interest rate for \"{period}\" deleted.",
+      "deleteConfirmTitle": "Delete Rate",
+      "deleteConfirmMessage": "Are you sure you want to delete the interest rate for \"{period}\"?"
     },
 
     "banks": {

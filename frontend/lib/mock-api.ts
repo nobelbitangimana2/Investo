@@ -535,6 +535,10 @@ export async function upsertInterestRate(
   };
 }
 
+export async function deleteInterestRate(period: string): Promise<void> {
+  await apiFetch(`/interest-rates/${periodToEnum(period)}`, { method: "DELETE" });
+}
+
 // ─────────────────────────────────────────────
 // Notifications
 // ─────────────────────────────────────────────
