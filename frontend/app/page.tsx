@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Shield, BarChart3, Clock, CheckCircle, ArrowRight } from "lucide-react";
+import { TrendingUp, Shield, BarChart3, Clock, CheckCircle, ArrowRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { InvestoLogo } from "@/components/ui/investo-logo";
 
 const banks = ["Bancobu", "BCB", "KCB", "Ecobank"];
 
@@ -37,7 +36,10 @@ export default async function LandingPage() {
       <nav className="border-b border-gray-100 bg-white/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="mx-auto max-w-6xl px-6 flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <InvestoLogo size={32} textClassName="text-navy-900" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-navy-700">
+              <TrendingUp className="h-5 w-5 text-white" />
+            </div>
+            <span className="text-lg font-bold text-navy-900">Investo</span>
           </div>
           <Link
             href="/login"

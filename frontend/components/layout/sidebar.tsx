@@ -19,7 +19,6 @@ import {
   Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { InvestoLogo } from "@/components/ui/investo-logo";
 import type { UserRole } from "@/types";
 
 interface NavItem {
@@ -75,9 +74,12 @@ export function Sidebar({ role }: SidebarProps) {
 
   return (
     <aside className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 min-h-screen flex flex-col">
-      <div className="p-5 border-b border-gray-100 dark:border-gray-700">
-        <Link href={`/${role}/dashboard`} className="inline-flex items-center">
-          <InvestoLogo size={38} textClassName="text-navy-900 dark:text-white" />
+      <div className="p-6 border-b border-gray-100">
+        <Link href={`/${role}/dashboard`} className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-navy-700">
+            <TrendingUp className="h-6 w-6 text-white" />
+          </div>
+          <span className="text-xl font-bold text-navy-900">Investo</span>
         </Link>
       </div>
 
