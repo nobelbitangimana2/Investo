@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { TrendingUp, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { InvestoLogo } from "@/components/ui/investo-logo";
 import { useAuthStore } from "@/lib/auth-store";
 import { mockLogin, resendVerificationEmail } from "@/lib/mock-api";
 import { loginSchema, type LoginFormValues } from "@/lib/zod-schemas";
@@ -82,10 +83,8 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-              <TrendingUp className="h-7 w-7 text-white" />
-            </div>
+          <Link href="/" className="inline-flex items-center justify-center mb-6">
+            <InvestoLogo size={52} variant="icon" />
           </Link>
           <h1 className="text-3xl font-bold text-white">{t("welcomeBack")}</h1>
           <p className="mt-2 text-white/60">{t("signInSubtitle")}</p>

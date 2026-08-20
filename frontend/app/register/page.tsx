@@ -4,8 +4,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { TrendingUp, Eye, EyeOff, CheckCircle, Mail, RefreshCw } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, Mail, RefreshCw } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { InvestoLogo } from "@/components/ui/investo-logo";
 import { registerUser, resendVerificationEmail } from "@/lib/mock-api";
 import { registerSchema, type RegisterFormValues } from "@/lib/zod-schemas";
 import { Input } from "@/components/ui/input";
@@ -118,10 +119,8 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         <div className="flex justify-end mb-4"><LanguageSwitcher /></div>
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-              <TrendingUp className="h-7 w-7 text-white" />
-            </div>
+          <Link href="/" className="inline-flex items-center justify-center mb-6">
+            <InvestoLogo size={52} variant="icon" />
           </Link>
           <h1 className="text-3xl font-bold text-white">{t("title")}</h1>
           <p className="mt-2 text-white/60">{t("subtitle")}</p>

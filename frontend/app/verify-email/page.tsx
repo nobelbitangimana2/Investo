@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { TrendingUp, CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { InvestoLogo } from "@/components/ui/investo-logo";
 import { verifyEmail, resendVerificationEmail } from "@/lib/mock-api";
 import { Button } from "@/components/ui/button";
 
@@ -63,10 +64,8 @@ function VerifyEmailContent() {
     <div className="min-h-screen bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
-              <TrendingUp className="h-7 w-7 text-white" />
-            </div>
+          <Link href="/" className="inline-flex items-center justify-center mb-4">
+            <InvestoLogo size={52} variant="icon" />
           </Link>
           <p className="text-white/60 text-sm">{t("pageSubtitle")}</p>
         </div>
