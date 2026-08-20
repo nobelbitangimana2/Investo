@@ -44,6 +44,7 @@ export default function NewWithdrawalPage() {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<WithdrawalFormValues>({
     resolver: zodResolver(withdrawalSchema),
@@ -54,7 +55,17 @@ export default function NewWithdrawalPage() {
   });
 
   const selectedBank = watch("bankToTransferTo");
-  const isMobileMoney = MOBILE_MONEY.includes(selectedBank ?? "");
+  // Use explicit string comparison — selectedBank is undefined before first selection
+  const isMobileMoney = selectedBank === "Lumicash" || selectedBank === "Ecocash";
+
+  // Clear the opposite field when bank type switches to avoid stale validation errors
+  useEffect(() => {
+    if (isMobileMoney) {
+      setValue("accountNumber", "");
+    } else {
+      setValue("phoneNumber", "");
+    }
+  }, [isMobileMoney, setValue]);
 
   // Build bank options from partner banks — include all (banks + mobile money)
   // Fallback to hardcoded list if API not yet loaded

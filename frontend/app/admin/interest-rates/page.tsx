@@ -16,14 +16,18 @@ import { formatDate } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { InterestRate } from "@/types";
 
-const PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
+const ALL_PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
+
+// ── Mode: "add" opens a blank form with a period dropdown
+//          "edit" opens a pre-filled form with the period locked (read-only)
+type ModalMode = "add" | "edit" | null;
 
 export default function AdminInterestRatesPage() {
   const t = useTranslations("admin.interestRates");
   const [rates, setRates] = useState<InterestRate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [editTarget, setEditTarget] = useState<InterestRate | null>(null);
-  const [showAdd, setShowAdd] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<InterestRate | null>(null);
   const [deleting, setDeleting] = useState(false);
   const toast = useToast();
@@ -41,37 +45,41 @@ export default function AdminInterestRatesPage() {
     getInterestRates().then((r) => { setRates(r); setLoading(false); });
   }, []);
 
-  // Available periods not yet configured (for Add dropdown)
-  const usedPeriods = rates.map((r) => r.investmentPeriod);
-  const availablePeriods = PERIODS.filter((p) => !usedPeriods.includes(p));
+  // Periods that don't yet have a rate — shown in the Add dropdown
+  const configuredPeriods = new Set(rates.map((r) => r.investmentPeriod));
+  const unconfiguredPeriods = ALL_PERIODS.filter((p) => !configuredPeriods.has(p));
 
+  // ── Open Add modal ─────────────────────────────────────────────────────
   function openAdd() {
-    reset();
+    reset({ investmentPeriod: undefined, ratePercentage: undefined });
     setEditTarget(null);
-    setShowAdd(true);
+    setModalMode("add");
   }
 
+  // ── Open Edit modal ────────────────────────────────────────────────────
   function openEdit(rate: InterestRate) {
-    setEditTarget(rate);
     setValue("investmentPeriod", rate.investmentPeriod);
     setValue("ratePercentage", rate.ratePercentage);
-    setShowAdd(true);
+    setEditTarget(rate);
+    setModalMode("edit");
   }
 
+  // ── Close any modal ────────────────────────────────────────────────────
   function closeModal() {
+    setModalMode(null);
     setEditTarget(null);
-    setShowAdd(false);
     reset();
   }
 
+  // ── Save (create or update) ────────────────────────────────────────────
   async function onSubmit(data: InterestRateFormValues) {
     try {
-      const updated = await upsertInterestRate(data.investmentPeriod, data.ratePercentage);
+      const saved = await upsertInterestRate(data.investmentPeriod, data.ratePercentage);
       setRates((prev) => {
-        const exists = prev.find((r) => r.investmentPeriod === updated.investmentPeriod);
+        const exists = prev.find((r) => r.investmentPeriod === saved.investmentPeriod);
         return exists
-          ? prev.map((r) => (r.investmentPeriod === updated.investmentPeriod ? updated : r))
-          : [...prev, updated];
+          ? prev.map((r) => (r.investmentPeriod === saved.investmentPeriod ? saved : r))
+          : [...prev, saved];
       });
       toast.success(t("rateUpdated", { period: data.investmentPeriod, rate: data.ratePercentage }));
       closeModal();
@@ -80,6 +88,7 @@ export default function AdminInterestRatesPage() {
     }
   }
 
+  // ── Delete ─────────────────────────────────────────────────────────────
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -95,6 +104,8 @@ export default function AdminInterestRatesPage() {
     }
   }
 
+  const allConfigured = unconfiguredPeriods.length === 0;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -103,13 +114,15 @@ export default function AdminInterestRatesPage() {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{t("title")}</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
-        {/* Always show Add button — modal will show available periods */}
-        <Button onClick={openAdd}>
-          <Plus className="h-4 w-4 mr-1" /> {t("addUpdate")}
-        </Button>
+        {/* Add Rate button — only when there are unconfigured periods */}
+        {!allConfigured && (
+          <Button onClick={openAdd}>
+            <Plus className="h-4 w-4 mr-1" /> {t("addRate")}
+          </Button>
+        )}
       </div>
 
-      {/* Table */}
+      {/* Rates table */}
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -117,7 +130,9 @@ export default function AdminInterestRatesPage() {
               <thead className="bg-gray-50 dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
                 <tr>
                   {[t("colPeriod"), t("colRate"), t("colLastUpdated"), t("colActions")].map((h) => (
-                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{h}</th>
+                    <th key={h} className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -154,12 +169,7 @@ export default function AdminInterestRatesPage() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-1">
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            onClick={() => openEdit(rate)}
-                            title="Edit"
-                          >
+                          <Button size="icon-sm" variant="ghost" onClick={() => openEdit(rate)} title="Edit">
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
@@ -182,42 +192,26 @@ export default function AdminInterestRatesPage() {
         </CardContent>
       </Card>
 
-      {/* Add / Edit Modal */}
+      {/* ── ADD modal — period dropdown + rate input ─────────────────────── */}
       <Modal
-        open={showAdd}
+        open={modalMode === "add"}
         onClose={closeModal}
-        title={editTarget ? t("editTitle", { period: editTarget.investmentPeriod }) : t("addTitle")}
+        title={t("addTitle")}
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-          {/* Period selector — only shown when adding, locked when editing */}
-          {editTarget ? (
-            <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                {t("investmentPeriod")}
-              </p>
-              <p className="font-semibold text-gray-800 dark:text-gray-100">
-                {editTarget.investmentPeriod}
-              </p>
-            </div>
-          ) : availablePeriods.length === 0 ? (
-            <p className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2">
-              All investment periods already have a rate configured. Edit an existing rate below.
-            </p>
-          ) : (
-            <Controller
-              name="investmentPeriod"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  label={t("investmentPeriod")}
-                  placeholder={t("periodPlaceholder")}
-                  options={availablePeriods.map((p) => ({ value: p, label: p }))}
-                  error={errors.investmentPeriod?.message}
-                  {...field}
-                />
-              )}
-            />
-          )}
+          <Controller
+            name="investmentPeriod"
+            control={control}
+            render={({ field }) => (
+              <Select
+                label={t("investmentPeriod")}
+                placeholder={t("periodPlaceholder")}
+                options={unconfiguredPeriods.map((p) => ({ value: p, label: p }))}
+                error={errors.investmentPeriod?.message}
+                {...field}
+              />
+            )}
+          />
           <Input
             label={t("rateLabel")}
             type="number"
@@ -238,7 +232,45 @@ export default function AdminInterestRatesPage() {
         </form>
       </Modal>
 
-      {/* Delete Confirm Modal */}
+      {/* ── EDIT modal — period locked, only rate is editable ────────────── */}
+      <Modal
+        open={modalMode === "edit"}
+        onClose={closeModal}
+        title={t("editTitle", { period: editTarget?.investmentPeriod ?? "" })}
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          {/* Period is read-only in edit mode */}
+          <div>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+              {t("investmentPeriod")}
+            </p>
+            <p className="font-semibold text-gray-800 dark:text-gray-100 text-base">
+              {editTarget?.investmentPeriod}
+            </p>
+            {/* Hidden field keeps period in form state for submission */}
+            <input type="hidden" {...register("investmentPeriod")} />
+          </div>
+          <Input
+            label={t("rateLabel")}
+            type="number"
+            step="0.1"
+            min="0"
+            placeholder={t("ratePlaceholder")}
+            error={errors.ratePercentage?.message}
+            {...register("ratePercentage", { valueAsNumber: true })}
+          />
+          <div className="flex gap-3 justify-end">
+            <Button type="button" variant="outline" onClick={closeModal}>
+              <X className="h-4 w-4 mr-1" /> Cancel
+            </Button>
+            <Button type="submit" loading={isSubmitting}>
+              <Check className="h-4 w-4 mr-1" /> {t("saveRate")}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ── DELETE confirm modal ─────────────────────────────────────────── */}
       <Modal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
