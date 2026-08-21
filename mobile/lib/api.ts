@@ -27,24 +27,28 @@ function normalizeUser(u: Record<string, unknown>): User {
   };
 }
 
-function normBank(b: string): Deposit['bank'] {
-  const map: Record<string, Deposit['bank']> = {
+function normBank(b: string): string {
+  const map: Record<string, string> = {
     BANCOBU: 'Bancobu', BCB: 'BCB', KCB: 'KCB', ECOBANK: 'Ecobank',
+    LUMICASH: 'Lumicash', ECOCASH: 'Ecocash',
   };
-  return map[b] ?? (b as Deposit['bank']);
+  return map[b] ?? b;
 }
 
-function normPeriod(p: string): Deposit['investmentPeriod'] {
-  const map: Record<string, Deposit['investmentPeriod']> = {
+function normPeriod(p: string): string {
+  // Map legacy backend enum values to friendly names
+  // New free-text periods are returned as-is
+  const map: Record<string, string> = {
     WEEKLY: 'Weekly', MONTHLY: 'Monthly', THREE_MONTHS: '3 Months',
     SIX_MONTHS: '6 Months', ONE_YEAR: '1 Year', FIVE_YEARS: '5 Years',
   };
-  return map[p] ?? (p as Deposit['investmentPeriod']);
+  return map[p] ?? p;
 }
 
 function bankToEnum(b: string): string {
   const map: Record<string, string> = {
     Bancobu: 'BANCOBU', BCB: 'BCB', KCB: 'KCB', Ecobank: 'ECOBANK',
+    Lumicash: 'LUMICASH', Ecocash: 'ECOCASH',
   };
   return map[b] ?? b;
 }
@@ -219,6 +223,15 @@ export async function updateClientProfileApi(data: Partial<ClientProfile>): Prom
   return res.profile;
 }
 
+// ── Partner Banks ──────────────────────────────────────────────────────────
+
+import type { PartnerBank } from '@/types';
+
+export async function getActivePartnerBanks(): Promise<PartnerBank[]> {
+  const res = await apiGet<unknown>('/partner-banks/active');
+  return unwrapPage<PartnerBank>(res);
+}
+
 // ── Deposits ───────────────────────────────────────────────────────────────
 
 export async function getDeposits(isOwn: boolean, clientId?: string): Promise<Deposit[]> {
@@ -274,11 +287,22 @@ export async function getWithdrawals(isOwn: boolean, clientId?: string): Promise
 }
 
 export async function submitWithdrawalApi(data: {
-  fullName: string; bankToTransferTo: string; accountNumber: string;
-  recipientName: string; amount: number;
+  fullName: string;
+  bankToTransferTo: string;
+  accountNumber?: string;
+  phoneNumber?: string;
+  recipientName: string;
+  amount: number;
 }): Promise<Withdrawal> {
+  const isMobile = ['Lumicash', 'Ecocash'].includes(data.bankToTransferTo);
   const res = await apiPost<Record<string, unknown>>('/withdrawals', {
-    ...data, bankToTransferTo: bankToEnum(data.bankToTransferTo),
+    fullName: data.fullName,
+    bankToTransferTo: bankToEnum(data.bankToTransferTo),
+    ...(isMobile
+      ? { phoneNumber: data.phoneNumber }
+      : { accountNumber: data.accountNumber }),
+    recipientName: data.recipientName,
+    amount: data.amount,
   });
   return normalizeWithdrawal(res);
 }
@@ -309,7 +333,8 @@ export async function getInterestRates(): Promise<InterestRate[]> {
   const res = await apiGet<unknown>('/interest-rates');
   return unwrapPage<Record<string, unknown>>(res).map((r) => ({
     id: r.id as string,
-    investmentPeriod: normPeriod(r.investmentPeriod as string),
+    // investmentPeriod is now a free-text string — no enum mapping needed
+    investmentPeriod: r.investmentPeriod as string,
     ratePercentage: toNumber(r.ratePercentage),
     dateUpdated: (r.updatedAt ?? r.dateUpdated) as string,
   }));

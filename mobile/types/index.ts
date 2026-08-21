@@ -31,7 +31,7 @@ export interface ClientProfile {
   city?: string;
   province?: string;
   country?: string;
-  bankName?: Bank;
+  bankName?: string;
   accountNumber?: string;
   accountHolderName?: string;
   joinedAt?: string;
@@ -41,19 +41,30 @@ export interface ClientProfile {
 // Enums / Literals
 // ─────────────────────────────────────────────
 
-export type Bank = "Bancobu" | "BCB" | "KCB" | "Ecobank";
+// All partner bank names are dynamic — no longer a hardcoded enum
+export type Bank = string;
 
-export type InvestmentPeriod =
-  | "Weekly"
-  | "Monthly"
-  | "3 Months"
-  | "6 Months"
-  | "1 Year"
-  | "5 Years";
+// Investment period is now free-text (e.g. "3 Months", "1 Year", "18 Months")
+export type InvestmentPeriod = string;
 
 export type DepositStatus = "pending" | "confirmed" | "rejected";
 export type WithdrawalStatus = "pending" | "confirmed" | "rejected";
 export type InvestmentStatus = "active" | "matured" | "closed";
+
+// ─────────────────────────────────────────────
+// Partner Bank (from /partner-banks/active)
+// ─────────────────────────────────────────────
+
+export interface PartnerBank {
+  id: string;
+  name: string;
+  icon?: string;
+  accountName: string;
+  accountNumber: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 // ─────────────────────────────────────────────
 // Deposit
@@ -121,7 +132,7 @@ export interface Investment {
 
 export interface InterestRate {
   id: string;
-  investmentPeriod: InvestmentPeriod;
+  investmentPeriod: string; // free-text period name stored by admin
   ratePercentage: number;
   dateUpdated: string;
 }

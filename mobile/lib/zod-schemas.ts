@@ -1,15 +1,12 @@
 import { z } from 'zod';
 
-export const BANKS = ['Bancobu', 'BCB', 'KCB', 'Ecobank'] as const;
-export const TRANSFER_OPTIONS = [
-  'Bancobu', 'BCB', 'KCB', 'Ecobank', 'Lumicash', 'Ecocash',
-] as const;
-const PERIODS = ['Weekly', 'Monthly', '3 Months', '6 Months', '1 Year', '5 Years'] as const;
+// Mobile money providers — these show a phone number field instead of account number
+export const MOBILE_MONEY = ['Lumicash', 'Ecocash'] as const;
 
 // i18next t() type
 type TFunc = (key: string) => string;
 
-// Fallback English messages (used when t() is unavailable)
+// Fallback English messages
 const fb: TFunc = (key) => {
   const d: Record<string, string> = {
     'validation.emailInvalid':       'Invalid email address',
@@ -24,6 +21,7 @@ const fb: TFunc = (key) => {
     'validation.fullNameMin':        'Full name must be at least 2 characters',
     'validation.selectBank':         'Please select a bank',
     'validation.accountNumberReq':   'Account number is required',
+    'validation.phoneNumberReq':     'Phone number is required',
     'validation.amountNumber':       'Amount must be a number',
     'validation.amountPositive':     'Amount must be positive',
     'validation.depositMin':         'Minimum deposit is 100,000 BIF',
@@ -72,26 +70,40 @@ export const registerSchema = z
     path: ['confirmPassword'],
   });
 
+// Deposit — bank and investmentPeriod are now free strings (come from partner banks API)
 export const depositSchema = z.object({
   fullName:         z.string().min(2, fb('validation.fullNameMin')),
-  bank:             z.enum(BANKS, { required_error: fb('validation.selectBank') }),
+  bank:             z.string().min(1, fb('validation.selectBank')),
   accountNumber:    z.string().min(4, fb('validation.accountNumberReq')),
   amount:           z.number({ invalid_type_error: fb('validation.amountNumber') })
                      .positive(fb('validation.amountPositive'))
                      .min(100000, fb('validation.depositMin')),
   depositDate:      z.string().min(1, fb('validation.depositDateReq')),
-  investmentPeriod: z.enum(PERIODS, { required_error: fb('validation.selectPeriod') }),
+  investmentPeriod: z.string().min(1, fb('validation.selectPeriod')),
   referenceNumber:  z.string().min(4, fb('validation.referenceReq')),
 });
 
+// Withdrawal — bankToTransferTo is a free string; phoneNumber used for mobile money
 export const withdrawalSchema = z.object({
   fullName:         z.string().min(2, fb('validation.fullNameReq')),
-  bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: fb('validation.selectBank') }),
-  accountNumber:    z.string().min(4, fb('validation.accountNumberReq')),
+  bankToTransferTo: z.string().min(1, fb('validation.selectBank')),
+  accountNumber:    z.string().optional(),
+  phoneNumber:      z.string().optional(),
   recipientName:    z.string().min(2, fb('validation.recipientNameReq')),
   amount:           z.number({ invalid_type_error: fb('validation.amountNumber') })
                      .positive(fb('validation.amountPositive'))
                      .min(50000, fb('validation.withdrawalMin')),
+}).superRefine((data, ctx) => {
+  const isMobile = (MOBILE_MONEY as readonly string[]).includes(data.bankToTransferTo);
+  if (isMobile) {
+    if (!data.phoneNumber || data.phoneNumber.trim().length < 8) {
+      ctx.addIssue({ code: 'custom', path: ['phoneNumber'], message: fb('validation.phoneNumberReq') });
+    }
+  } else {
+    if (!data.accountNumber || data.accountNumber.trim().length < 4) {
+      ctx.addIssue({ code: 'custom', path: ['accountNumber'], message: fb('validation.accountNumberReq') });
+    }
+  }
 });
 
 export const rejectSchema = z.object({
@@ -109,25 +121,9 @@ export const changePasswordSchema = z
     path: ['confirmPassword'],
   });
 
-// Factory for translated schemas (pass i18next t function)
-export function createMobileSchemas(t: TFunc) {
-  const tr = (key: string) => { try { return t(key); } catch { return fb(key); } };
-  return {
-    withdrawal: z.object({
-      fullName:         z.string().min(2, tr('validation.fullNameReq')),
-      bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: tr('validation.selectBank') }),
-      accountNumber:    z.string().min(4, tr('validation.accountNumberReq')),
-      recipientName:    z.string().min(2, tr('validation.recipientNameReq')),
-      amount:           z.number({ invalid_type_error: tr('validation.amountNumber') })
-                         .positive(tr('validation.amountPositive'))
-                         .min(50000, tr('validation.withdrawalMin')),
-    }),
-  };
-}
-
-export type LoginFormValues        = z.infer<typeof loginSchema>;
-export type RegisterFormValues     = z.infer<typeof registerSchema>;
-export type DepositFormValues      = z.infer<typeof depositSchema>;
-export type WithdrawalFormValues   = z.infer<typeof withdrawalSchema>;
-export type RejectFormValues       = z.infer<typeof rejectSchema>;
+export type LoginFormValues          = z.infer<typeof loginSchema>;
+export type RegisterFormValues       = z.infer<typeof registerSchema>;
+export type DepositFormValues        = z.infer<typeof depositSchema>;
+export type WithdrawalFormValues     = z.infer<typeof withdrawalSchema>;
+export type RejectFormValues         = z.infer<typeof rejectSchema>;
 export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;

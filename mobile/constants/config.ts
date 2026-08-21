@@ -4,16 +4,10 @@ export const API_BASE: string =
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
   'https://investobacken.onrender.com/api';
 
-export const BANKS = ['Bancobu', 'BCB', 'KCB', 'Ecobank'] as const;
+// Fallback bank list used only when the partner-banks API hasn't responded yet
+export const FALLBACK_BANKS = ['Bancobu', 'BCB', 'KCB', 'Ecobank', 'Lumicash', 'Ecocash'] as const;
 
-export const INVESTMENT_PERIODS = [
-  'Weekly',
-  'Monthly',
-  '3 Months',
-  '6 Months',
-  '1 Year',
-  '5 Years',
-] as const;
+export const MOBILE_MONEY_BANKS = ['Lumicash', 'Ecocash'] as const;
 
 export const COLORS = {
   navy: '#0f2167',
@@ -27,6 +21,7 @@ export const COLORS = {
   gray200: '#e5e7eb',
   gray400: '#9ca3af',
   gray500: '#6b7280',
+  gray600: '#4b5563',
   gray700: '#374151',
   gray900: '#111827',
   white: '#ffffff',

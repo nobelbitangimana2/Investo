@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useNotificationStore } from '@/lib/notification-store';
@@ -32,9 +32,11 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
         </TouchableOpacity>
       ) : (
         <View style={styles.brand}>
-          <View style={styles.logoBox}>
-            <Ionicons name="trending-up" size={16} color={COLORS.white} />
-          </View>
+          <Image
+            source={require('../../assets/icon.png')}
+            style={styles.logoImg}
+            resizeMode="cover"
+          />
           <Text style={styles.brandName}>Investo</Text>
         </View>
       )}
@@ -77,7 +79,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray100,
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  logoBox: { width: 28, height: 28, borderRadius: 8, backgroundColor: COLORS.navy, alignItems: 'center', justifyContent: 'center' },
+  logoImg: { width: 30, height: 30, borderRadius: 8 },
   brandName: { fontSize: 16, fontWeight: '800', color: COLORS.navy },
   title: { fontSize: 16, fontWeight: '700', color: COLORS.gray900, flex: 1, textAlign: 'center' },
   flex1: { flex: 1 },
