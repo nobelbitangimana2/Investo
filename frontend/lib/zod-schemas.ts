@@ -80,19 +80,19 @@ export const registerSchema = z
 
 export const depositSchema = z.object({
   fullName:         z.string().min(2, fallback("validation.fullNameMin")),
-  bank:             z.string().min(1, fallback("validation.selectBank")),
+  bank:             z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.selectBank") }),
   accountNumber:    z.string().min(4, fallback("validation.accountNumberReq")),
   amount:           z.number({ invalid_type_error: fallback("validation.amountNumber") })
                      .positive(fallback("validation.amountPositive"))
                      .min(100000, fallback("validation.depositMin")),
   depositDate:      z.string().min(1, fallback("validation.depositDateReq")),
-  investmentPeriod: z.string().min(1, fallback("validation.selectPeriod")),
+  investmentPeriod: z.enum(PERIODS, { required_error: fallback("validation.selectPeriod") }),
   referenceNumber:  z.string().min(4, fallback("validation.referenceReq")),
 });
 
 export const withdrawalSchema = z.object({
   fullName:         z.string().min(2, fallback("validation.fullNameReq")),
-  bankToTransferTo: z.string().min(1, fallback("validation.selectBank")),
+  bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.selectBank") }),
   // accountNumber used for bank transfers; phoneNumber used for mobile money
   accountNumber:    z.string().optional(),
   phoneNumber:      z.string().optional(),
@@ -124,7 +124,7 @@ export const profileSchema = z.object({
   address:          z.string().min(5, fallback("validation.addressMin")),
   city:             z.string().min(2, fallback("validation.cityMin")),
   province:         z.string().min(2, fallback("validation.provinceMin")),
-  bankName:         z.enum(BANKS, { required_error: fallback("validation.bankNameReq") }),
+  bankName:         z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.bankNameReq") }),
   accountNumber:    z.string().min(4, fallback("validation.accountNumberReq")),
   accountHolderName: z.string().min(2, fallback("validation.accountHolderReq")),
 });

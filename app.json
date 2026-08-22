@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "19ec2c40-c780-4f0c-8096-75fa08affd98"
+      }
+    },
+    "android": {
+      "package": "com.alnobel.investoproject"
+    }
+  }
+}

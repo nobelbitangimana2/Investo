@@ -13,6 +13,7 @@ export interface User {
   profilePicture?: string;
   status: UserStatus;
   createdAt: string;
+  updatedAt?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -31,7 +32,7 @@ export interface ClientProfile {
   province: string;
   country: string;
   bankName: Bank;
-  accountNumber: string;
+  accountNumber?: string;
   accountHolderName: string;
   joinedAt: string;
 }
@@ -244,7 +245,8 @@ export interface DepositFormData {
 export interface WithdrawalFormData {
   fullName: string;
   bankToTransferTo: Bank;
-  accountNumber: string;
+  accountNumber?: string;
+  phoneNumber?: string;
   recipientName: string;
   amount: number;
 }

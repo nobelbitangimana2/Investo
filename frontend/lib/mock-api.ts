@@ -50,7 +50,7 @@ function normalizeUser(u: Record<string, unknown>): User {
 
 function normalizeDeposit(d: Record<string, unknown>): Deposit {
   return {
-    ...(d as Deposit),
+    ...(d as unknown as Deposit),
     amount: toNumber(d.amount),
     status: (d.status as string).toLowerCase() as Deposit["status"],
     bank: normBank(d.bank as string),
@@ -63,7 +63,7 @@ function normalizeDeposit(d: Record<string, unknown>): Deposit {
 
 function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
   return {
-    ...(w as Withdrawal),
+    ...(w as unknown as Withdrawal),
     amount: toNumber(w.amount),
     status: (w.status as string).toLowerCase() as Withdrawal["status"],
     bankToTransferTo: normBank(w.bankToTransferTo as string),
@@ -74,7 +74,7 @@ function normalizeInvestment(i: Record<string, unknown>): Investment {
   const originalPrincipal = toNumber(i.originalPrincipal ?? i.amount);
   const interestRate = toNumber(i.interestRate);
   return {
-    ...(i as Investment),
+    ...(i as unknown as Investment),
     status: (i.status as string).toLowerCase() as Investment["status"],
     investmentPeriod: normPeriod(i.investmentPeriod as string),
     amount: originalPrincipal,
@@ -92,7 +92,7 @@ function normalizeInvestment(i: Record<string, unknown>): Investment {
 
 function normalizeNotification(n: Record<string, unknown>): Notification {
   return {
-    ...(n as Notification),
+    ...(n as unknown as Notification),
     date: (n.createdAt ?? n.date) as string,
   };
 }
@@ -460,7 +460,7 @@ export async function submitWithdrawal(
     bankToTransferTo: bankToEnum(data.bankToTransferTo),
     // Send phoneNumber for mobile money, accountNumber for banks
     ...(isMobile
-      ? { phoneNumber: (data as Record<string, unknown>).phoneNumber }
+      ? { phoneNumber: data.phoneNumber }
       : { accountNumber: data.accountNumber }),
     recipientName: data.recipientName,
     amount: data.amount,
@@ -518,7 +518,7 @@ export async function getInterestRates(): Promise<InterestRate[]> {
   return rates.map((r) => ({
     id: r.id as string,
     // investmentPeriod is now a plain string stored exactly as the admin typed it
-    investmentPeriod: r.investmentPeriod as string,
+    investmentPeriod: normPeriod(r.investmentPeriod as string),
     ratePercentage: toNumber(r.ratePercentage),
     dateUpdated: (r.updatedAt ?? r.dateUpdated) as string,
   }));
@@ -535,7 +535,7 @@ export async function upsertInterestRate(
   });
   return {
     id: res.id as string,
-    investmentPeriod: res.investmentPeriod as string,
+    investmentPeriod: normPeriod(res.investmentPeriod as string),
     ratePercentage: toNumber(res.ratePercentage),
     dateUpdated: (res.updatedAt ?? res.dateUpdated) as string,
   };
