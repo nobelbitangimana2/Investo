@@ -5,7 +5,20 @@ export const BANKS = ["Bancobu", "BCB", "KCB", "Ecobank"] as const;
 export const TRANSFER_OPTIONS = [
   "Bancobu", "BCB", "KCB", "Ecobank", "Lumicash", "Ecocash",
 ] as const;
+const RAW_BANK_ALIASES = [
+  "BANCOBU", "BCB", "KCB", "ECOBANK", "LUMICASH", "ECOCASH",
+] as const;
 const PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"] as const;
+
+const normalizeBankValue = (value: string): string => {
+  const map: Record<string, string> = {
+    BANCOBU: "Bancobu",
+    ECOBANK: "Ecobank",
+    LUMICASH: "Lumicash",
+    ECOCASH: "Ecocash",
+  };
+  return map[value] ?? value;
+};
 
 // ── Helper: build schemas with translated messages ────────────────────────
 // Pass a t() function from useTranslations/useTranslation to get translated errors.
@@ -78,9 +91,16 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
+const bankSchema = z
+  .union([
+    z.enum(TRANSFER_OPTIONS),
+    z.enum(RAW_BANK_ALIASES),
+  ])
+  .transform((value) => normalizeBankValue(String(value)));
+
 export const depositSchema = z.object({
   fullName:         z.string().min(2, fallback("validation.fullNameMin")),
-  bank:             z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.selectBank") }),
+  bank:             bankSchema,
   accountNumber:    z.string().min(4, fallback("validation.accountNumberReq")),
   amount:           z.number({ invalid_type_error: fallback("validation.amountNumber") })
                      .positive(fallback("validation.amountPositive"))
@@ -92,7 +112,7 @@ export const depositSchema = z.object({
 
 export const withdrawalSchema = z.object({
   fullName:         z.string().min(2, fallback("validation.fullNameReq")),
-  bankToTransferTo: z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.selectBank") }),
+  bankToTransferTo: bankSchema,
   // accountNumber used for bank transfers; phoneNumber used for mobile money
   accountNumber:    z.string().optional(),
   phoneNumber:      z.string().optional(),
@@ -124,7 +144,7 @@ export const profileSchema = z.object({
   address:          z.string().min(5, fallback("validation.addressMin")),
   city:             z.string().min(2, fallback("validation.cityMin")),
   province:         z.string().min(2, fallback("validation.provinceMin")),
-  bankName:         z.enum(TRANSFER_OPTIONS, { required_error: fallback("validation.bankNameReq") }),
+  bankName:         bankSchema,
   accountNumber:    z.string().min(4, fallback("validation.accountNumberReq")),
   accountHolderName: z.string().min(2, fallback("validation.accountHolderReq")),
 });

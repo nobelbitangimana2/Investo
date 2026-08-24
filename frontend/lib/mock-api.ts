@@ -122,8 +122,8 @@ function toNumber(val: unknown): number {
   }
   return Number(val);
 }
-function normBank(b: string): Deposit["bank"] {
-  const map: Record<string, Deposit["bank"]> = {
+function normalizeBankName(value: string): string {
+  const map: Record<string, string> = {
     BANCOBU: "Bancobu",
     BCB: "BCB",
     KCB: "KCB",
@@ -131,7 +131,11 @@ function normBank(b: string): Deposit["bank"] {
     LUMICASH: "Lumicash",
     ECOCASH: "Ecocash",
   };
-  return map[b] ?? (b as Deposit["bank"]);
+  return map[value] ?? value;
+}
+
+function normBank(b: string): Deposit["bank"] {
+  return normalizeBankName(b) as Deposit["bank"];
 }
 
 // InvestmentPeriod enum mapping
@@ -657,13 +661,19 @@ import type { PartnerBank } from "@/types";
 /** Public — no auth required */
 export async function getActivePartnerBanks(): Promise<PartnerBank[]> {
   const res = await apiGet<unknown>("/partner-banks/active");
-  return unwrapPage<PartnerBank>(res);
+  return unwrapPage<Record<string, unknown>>(res).map((bank) => ({
+    ...(bank as PartnerBank),
+    name: normalizeBankName(String((bank as Record<string, unknown>).name ?? "")),
+  }));
 }
 
 /** Admin — requires ADMIN role */
 export async function getAllPartnerBanks(): Promise<PartnerBank[]> {
   const res = await apiGet<unknown>("/partner-banks");
-  return unwrapPage<PartnerBank>(res);
+  return unwrapPage<Record<string, unknown>>(res).map((bank) => ({
+    ...(bank as PartnerBank),
+    name: normalizeBankName(String((bank as Record<string, unknown>).name ?? "")),
+  }));
 }
 
 export async function createPartnerBank(data: {
@@ -673,7 +683,10 @@ export async function createPartnerBank(data: {
   accountNumber: string;
   isActive?: boolean;
 }): Promise<PartnerBank> {
-  return apiPost<PartnerBank>("/partner-banks", data);
+  return apiPost<PartnerBank>("/partner-banks", {
+    ...data,
+    name: normalizeBankName(data.name),
+  });
 }
 
 export async function updatePartnerBank(
@@ -688,7 +701,10 @@ export async function updatePartnerBank(
 ): Promise<PartnerBank> {
   return apiFetch<PartnerBank>(`/partner-banks/${id}`, {
     method: "PUT",
-    body: JSON.stringify(data),
+    body: JSON.stringify({
+      ...data,
+      ...(data.name ? { name: normalizeBankName(data.name) } : {}),
+    }),
   });
 }
 
