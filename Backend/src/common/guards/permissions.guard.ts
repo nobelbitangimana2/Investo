@@ -26,11 +26,13 @@ export class PermissionsGuard implements CanActivate {
     const { user } = context.switchToHttp().getRequest();
     if (!user) throw new ForbiddenException();
 
+    const userRole = String(user.role ?? '').toUpperCase();
+
     // Admins always pass
-    if (user.role === Role.ADMIN) return true;
+    if (userRole === Role.ADMIN.toString()) return true;
 
     // For accountants, check their permission row
-    if (user.role === Role.ACCOUNTANT) {
+    if (userRole === Role.ACCOUNTANT.toString()) {
       const perms = await this.prisma.accountantPermission.findUnique({
         where: { userId: user.id },
       });
