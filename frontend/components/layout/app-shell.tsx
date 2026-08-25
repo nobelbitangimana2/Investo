@@ -27,7 +27,7 @@ export function AppShell({ children }: AppShellProps) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-[#070d1a] transition-colors duration-300">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block">
         <Sidebar role={user.role} />

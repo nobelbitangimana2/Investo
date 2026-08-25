@@ -38,14 +38,14 @@ export function Modal({ open, onClose, title, description, children, className }
       />
       <div
         className={cn(
-          "relative z-10 w-full max-w-md rounded-2xl bg-white shadow-xl mx-4",
+          "relative z-10 w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 shadow-xl mx-4",
           className
         )}
       >
-        <div className="flex items-start justify-between p-6 border-b border-gray-100">
+        <div className="flex items-start justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div>
             {title && (
-              <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+              <h2 id="modal-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {title}
               </h2>
             )}
@@ -55,7 +55,7 @@ export function Modal({ open, onClose, title, description, children, className }
           </div>
           <button
             onClick={onClose}
-            className="ml-4 rounded-lg p-1.5 hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+            className="ml-4 rounded-lg p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />

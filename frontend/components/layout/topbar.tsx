@@ -60,10 +60,10 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
         {/* Notification bell — visible for all roles */}
         <button
           onClick={handleNotifications}
-          className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="relative p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           aria-label={t("notifications")}
         >
-          <Bell className="h-5 w-5 text-gray-600" />
+          <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
               {unreadCount > 9 ? "9+" : unreadCount}
@@ -74,7 +74,7 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2.5 p-1.5 pr-3 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2.5 p-1.5 pr-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
             aria-label={t("userMenu")}
           >
             {user?.profilePicture ? (
@@ -101,11 +101,11 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
                 onClick={() => setShowUserMenu(false)}
                 aria-hidden="true"
               />
-              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-lg z-20">
+              <div className="absolute right-0 mt-2 w-48 rounded-xl border border-gray-200 bg-white dark:bg-gray-900 shadow-lg z-20">
                 {user?.role === "client" && (
                   <button
                     onClick={() => { router.push("/client/settings"); setShowUserMenu(false); }}
-                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl transition-colors"
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-xl transition-colors"
                   >
                     <User className="h-4 w-4" />
                     {tCommon("settings")}
@@ -114,7 +114,7 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
                 {user?.role === "admin" && (
                   <button
                     onClick={() => { router.push("/admin/settings"); setShowUserMenu(false); }}
-                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl transition-colors"
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-xl transition-colors"
                   >
                     <User className="h-4 w-4" />
                     {tCommon("settings")}
@@ -123,7 +123,7 @@ export function Topbar({ onMenuClick, unreadCount = 0 }: TopbarProps) {
                 {user?.role === "accountant" && (
                   <button
                     onClick={() => { router.push("/accountant/settings"); setShowUserMenu(false); }}
-                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 rounded-t-xl transition-colors"
+                    className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-t-xl transition-colors"
                   >
                     <User className="h-4 w-4" />
                     {tCommon("settings")}

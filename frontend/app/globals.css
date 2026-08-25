@@ -49,6 +49,26 @@
   }
 }
 
+/* Keep legacy utility classes readable when dark mode is enabled. */
+@layer utilities {
+  .dark .bg-white { background-color: hsl(222 32% 11%) !important; }
+  .dark .bg-white\/80 { background-color: hsl(222 32% 11% / 0.88) !important; }
+  .dark .bg-gray-50 { background-color: hsl(222 32% 8%) !important; }
+  .dark .bg-gray-100 { background-color: hsl(217 25% 16%) !important; }
+  .dark .bg-blue-50\/30,
+  .dark .bg-blue-50\/40 { background-color: hsl(221 70% 18% / 0.55) !important; }
+  .dark .text-gray-900 { color: hsl(210 40% 98%) !important; }
+  .dark .text-gray-800 { color: hsl(210 30% 94%) !important; }
+  .dark .text-gray-700 { color: hsl(214 20% 84%) !important; }
+  .dark .text-gray-600 { color: hsl(215 16% 75%) !important; }
+  .dark .text-gray-500 { color: hsl(215 18% 68%) !important; }
+  .dark .text-gray-400 { color: hsl(215 16% 58%) !important; }
+  .dark .border-gray-100 { border-color: hsl(217 25% 18%) !important; }
+  .dark .border-gray-200 { border-color: hsl(217 25% 24%) !important; }
+  .dark .divide-gray-50 > :not([hidden]) ~ :not([hidden]),
+  .dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: hsl(217 25% 18%) !important; }
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -56,9 +76,9 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 300ms ease, color 300ms ease;
   }
 }
-
 @layer utilities {
   .animate-in {
     animation: animate-in 0.2s ease-out;
@@ -78,3 +98,5 @@
     transform: translateX(0) translateY(0);
   }
 }
+
+  .dark .bg-white\/80 { background-color: hsl(222 32% 11% / 0.88) !important; }
