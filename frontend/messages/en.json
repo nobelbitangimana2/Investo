@@ -138,6 +138,21 @@
     "userMenu": "User menu"
   },
 
+  "notificationContent": {
+    "newDepositTitle": "New Deposit Submitted",
+    "withdrawalRequestTitle": "Withdrawal Request",
+    "depositConfirmedTitle": "Deposit Confirmed",
+    "depositConfirmedMessage": "Your deposit of {amount} BIF has been confirmed. Your investment is now active.",
+    "withdrawalConfirmedTitle": "Withdrawal Confirmed",
+    "withdrawalConfirmedMessage": "Your withdrawal of {amount} BIF to {bank} has been confirmed.",
+    "withdrawalRejectedTitle": "Withdrawal Rejected",
+    "withdrawalRejectedMessage": "Your withdrawal request for {amount} BIF was rejected. Reason: {reason}",
+    "newDepositMessage": "{name} submitted a deposit of {amount} BIF ({period}) and it is pending review.",
+    "withdrawalRequestMessage": "{name} requested a withdrawal of {amount} BIF to {bank} and it is awaiting confirmation.",
+    "staffDepositConfirmedMessage": "{name}'s deposit of {amount} BIF was confirmed.",
+    "staffWithdrawalConfirmedMessage": "{name}'s withdrawal of {amount} BIF was confirmed."
+  },
+
   "auth": {
     "welcomeBack": "Welcome back",
     "signInSubtitle": "Sign in to your Investo account",
@@ -408,21 +423,6 @@
       "noNotifications": "No notifications yet",
       "markRead": "Mark read"
     },
-    "notificationContent": {
-      "newDepositTitle": "New Deposit Submitted",
-      "withdrawalRequestTitle": "Withdrawal Request",
-      "depositConfirmedTitle": "Deposit Confirmed",
-      "depositConfirmedMessage": "Your deposit of {amount} BIF has been confirmed. Your investment is now active.",
-      "withdrawalConfirmedTitle": "Withdrawal Confirmed",
-      "withdrawalConfirmedMessage": "Your withdrawal of {amount} BIF to {bank} has been confirmed.",
-      "withdrawalRejectedTitle": "Withdrawal Rejected",
-      "withdrawalRejectedMessage": "Your withdrawal request for {amount} BIF was rejected. Reason: {reason}",
-      "newDepositMessage": "{name} submitted a deposit of {amount} BIF ({period}) and it is pending review.",
-      "withdrawalRequestMessage": "{name} requested a withdrawal of {amount} BIF to {bank} and it is awaiting confirmation.",
-      "staffDepositConfirmedMessage": "{name}'s deposit of {amount} BIF was confirmed.",
-      "staffWithdrawalConfirmedMessage": "{name}'s withdrawal of {amount} BIF was confirmed."
-    },
-
     "settings": {
       "title": "Settings",
       "profilePicture": "Profile Picture",
