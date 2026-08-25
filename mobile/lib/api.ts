@@ -23,6 +23,7 @@ function normalizeUser(u: Record<string, unknown>): User {
     role: (u.role as string).toLowerCase() as User['role'],
     status: (u.status as string).toLowerCase() as User['status'],
     profilePicture: u.profilePicture as string | undefined,
+    phone: u.phone as string | undefined,
     createdAt: u.createdAt as string,
   };
 }
@@ -71,6 +72,7 @@ function normalizeDeposit(d: Record<string, unknown>): Deposit {
     submittedAt: (d.submittedAt ?? d.createdAt) as string,
     verifiedBy: (d.verifiedById as string | undefined) ?? undefined,
     verifiedAt: (d.verifiedAt as string | undefined) ?? undefined,
+    phoneNumber: ((d.client as Record<string, unknown> | undefined)?.phone as string | undefined) ?? undefined,
   };
 }
 
@@ -80,6 +82,7 @@ function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
     amount: toNumber(w.amount),
     status: (w.status as string).toLowerCase() as Withdrawal['status'],
     bankToTransferTo: normBank(w.bankToTransferTo as string),
+    phoneNumber: ((w.client as Record<string, unknown> | undefined)?.phone as string | undefined) ?? (w.mobileMoney as Record<string, unknown> | undefined)?.phoneNumber as string | undefined,
   };
 }
 
@@ -118,7 +121,7 @@ export async function loginApi(email: string, password: string): Promise<User> {
 }
 
 export async function registerApi(data: {
-  firstName: string; middleName?: string; lastName: string; email: string; password: string;
+  firstName: string; middleName?: string; lastName: string; email: string; password: string; phone?: string;
 }): Promise<{ message: string }> {
   return apiPost('/auth/register', data);
 }

@@ -11,6 +11,7 @@ import { formatCurrency, formatDate, timeAgo, toNumber } from '@/lib/utils';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
 import type { Deposit, Withdrawal, Investment, Notification } from '@/types';
+import { ThemeView } from '@/components/ui/ThemeView';
 
 export default function ClientDashboard() {
   const { t } = useTranslation();
@@ -47,7 +48,7 @@ export default function ClientDashboard() {
   const activeCount = investments.filter((i) => i.status === 'active').length;
 
   return (
-    <View style={styles.root}>
+    <ThemeView style={styles.root}>
       <Header />
       <ScrollView
         style={styles.scroll}
@@ -111,7 +112,7 @@ export default function ClientDashboard() {
             ))}
         </Card>
       </ScrollView>
-    </View>
+    </ThemeView>
   );
 }
 

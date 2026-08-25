@@ -9,6 +9,7 @@ import { Header } from '@/components/layout/Header';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
 import type { Notification } from '@/types';
+import { ThemeView } from '@/components/ui/ThemeView';
 
 const TYPE_ROUTES: Record<string, string> = {
   deposit: '/(accountant)/deposits',
@@ -49,7 +50,7 @@ export default function AccountantNotificationsScreen() {
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <View style={styles.root}>
+    <ThemeView style={styles.root}>
       <Header />
       <View style={styles.topRow}>
         <View>
@@ -69,7 +70,7 @@ export default function AccountantNotificationsScreen() {
         ListEmptyComponent={<EmptyState icon="notifications-outline" title={t('accountant.notifications.noNotifications')} />}
         renderItem={({ item }) => <NotificationItem notification={item} onPress={handlePress} />}
       />
-    </View>
+    </ThemeView>
   );
 }
 

@@ -11,6 +11,7 @@ import { formatCurrency, timeAgo, toNumber } from '@/lib/utils';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
 import type { Deposit, Withdrawal, Investment, User, Notification } from '@/types';
+import { ThemeView } from '@/components/ui/ThemeView';
 
 export default function AdminDashboard() {
   const { t } = useTranslation();
@@ -44,7 +45,7 @@ export default function AdminDashboard() {
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <View style={styles.root}>
+    <ThemeView style={styles.root}>
       <Header />
       <ScrollView contentContainerStyle={styles.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <Text style={styles.title}>{t('admin.dashboard.title')}</Text>
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
         </Card>
         <View style={{ height: 24 }} />
       </ScrollView>
-    </View>
+    </ThemeView>
   );
 }
 

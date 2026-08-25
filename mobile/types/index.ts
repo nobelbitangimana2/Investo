@@ -14,6 +14,7 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   updatedAt?: string;
+  phone?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -61,6 +62,7 @@ export interface PartnerBank {
   icon?: string;
   accountName: string;
   accountNumber: string;
+  phoneNumber?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -76,6 +78,7 @@ export interface Deposit {
   fullName: string;
   bank: Bank;
   accountNumber: string;
+  phoneNumber?: string;
   amount: number;
   depositDate: string;
   referenceNumber: string;
@@ -98,6 +101,7 @@ export interface Withdrawal {
   fullName: string;
   bankToTransferTo: Bank;
   accountNumber: string;
+  phoneNumber?: string;
   recipientName: string;
   amount: number;
   status: WithdrawalStatus;

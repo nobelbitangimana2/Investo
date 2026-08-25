@@ -80,6 +80,7 @@ export default function DepositsScreen() {
           )}
           {[
             [t('client.deposits.fieldBank'), selected.bank],
+            selected.phoneNumber ? [t('client.deposits.fieldPhone'), selected.phoneNumber] : null,
             [t('client.deposits.fieldAccount'), selected.accountNumber],
             [t('client.deposits.fieldAmount'), formatCurrency(toNumber(selected.amount))],
             [t('client.deposits.fieldDate'), formatDate(selected.depositDate)],

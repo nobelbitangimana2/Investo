@@ -62,6 +62,7 @@ export const registerSchema = z
     middleName:      z.string().max(50).optional().transform((v) => v?.trim() || undefined),
     lastName:        z.string().min(2, fb('validation.lastNameMin')).max(50).transform((v) => v.trim()),
     email:           z.string().email(fb('validation.emailInvalidReg')).transform((v) => v.toLowerCase().trim()),
+    phone:           z.string().min(8, fb('validation.phoneMin')).max(30).transform((v) => v.trim()),
     password:        z.string().min(8, fb('validation.passwordMin')).max(128, fb('validation.passwordMax')),
     confirmPassword: z.string().min(1, fb('validation.confirmPasswordReq')),
   })

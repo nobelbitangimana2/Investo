@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/config';
+import { useTheme } from '@/lib/theme';
 
 interface StatCardProps {
   title: string;
@@ -16,13 +17,14 @@ export function StatCard({
   title, value, iconName, iconBg = '#eff6ff',
   iconColor = COLORS.navy, description, fullWidth,
 }: StatCardProps) {
+  const { colors } = useTheme();
   return (
-    <View style={[styles.card, fullWidth && styles.fullWidth]}>
+    <View style={[styles.card, { backgroundColor: colors.surface }, fullWidth && styles.fullWidth]}>
       <View style={styles.row}>
         <View style={styles.textBlock}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
-          {description && <Text style={styles.desc}>{description}</Text>}
+          <Text style={[styles.title, { color: colors.textMuted }]}>{title}</Text>
+          <Text style={[styles.value, { color: colors.text }]} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+          {description && <Text style={[styles.desc, { color: colors.textSubtle }]}>{description}</Text>}
         </View>
         <View style={[styles.iconBox, { backgroundColor: iconBg }]}>
           <Ionicons name={iconName} size={22} color={iconColor} />

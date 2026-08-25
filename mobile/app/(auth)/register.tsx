@@ -41,7 +41,7 @@ export default function RegisterScreen() {
 
   async function onSubmit(data: RegisterFormValues) {
     try {
-      await registerApi({ firstName: data.firstName, middleName: data.middleName, lastName: data.lastName, email: data.email, password: data.password });
+      await registerApi({ firstName: data.firstName, middleName: data.middleName, lastName: data.lastName, email: data.email, password: data.password, phone: data.phone });
       setRegisteredEmail(data.email);
       setRegistered(true);
     } catch (err) {
@@ -120,6 +120,12 @@ export default function RegisterScreen() {
             <TextInput style={[styles.input, errors.email && styles.inputError]} placeholder="you@example.com" keyboardType="email-address" autoCapitalize="none" value={field.value} onChangeText={field.onChange} />
           )} />
           {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
+
+          <Text style={styles.label}>{t('auth.register.phoneNumber')} *</Text>
+          <Controller control={control} name="phone" render={({ field }) => (
+            <TextInput style={[styles.input, errors.phone && styles.inputError]} placeholder={t('auth.register.phonePlaceholder')} keyboardType="phone-pad" value={field.value} onChangeText={field.onChange} />
+          )} />
+          {errors.phone && <Text style={styles.errorText}>{errors.phone.message}</Text>}
 
           <Text style={styles.label}>{t('auth.register.password')} *</Text>
           <View style={styles.passwordRow}>

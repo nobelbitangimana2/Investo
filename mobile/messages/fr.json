@@ -1,4 +1,16 @@
 {
+  "notificationContent": {
+    "newDepositTitle": "Nouveau dépôt soumis",
+    "withdrawalRequestTitle": "Demande de retrait",
+    "depositConfirmedTitle": "Dépôt confirmé",
+    "depositConfirmedMessage": "Votre dépôt de {amount} BIF a été confirmé. Votre investissement est maintenant actif.",
+    "withdrawalConfirmedTitle": "Retrait confirmé",
+    "withdrawalConfirmedMessage": "Votre retrait de {amount} BIF vers {bank} a été confirmé.",
+    "withdrawalRejectedTitle": "Retrait rejeté",
+    "withdrawalRejectedMessage": "Votre demande de retrait de {amount} BIF a été rejetée. Motif : {reason}",
+    "newDepositMessage": "{name} a soumis un dépôt de {amount} BIF ({period}) qui est en attente de vérification.",
+    "withdrawalRequestMessage": "{name} a demandé un retrait de {amount} BIF vers {bank}, en attente de confirmation."
+  },
   "common": {
     "appName": "Investo",
     "save": "Enregistrer",
@@ -224,6 +236,7 @@
       "receiptLabel": "Reçu de dépôt",
       "fieldClient": "Client",
       "fieldBank": "Banque",
+      "fieldPhone": "Téléphone",
       "fieldAccount": "Compte",
       "fieldAmount": "Montant",
       "fieldDate": "Date",

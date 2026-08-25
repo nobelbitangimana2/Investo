@@ -8,6 +8,7 @@ import { Header } from '@/components/layout/Header';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
 import type { Notification } from '@/types';
+import { ThemeView } from '@/components/ui/ThemeView';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ export default function NotificationsScreen() {
   const unread = notifications.filter((n) => !n.read).length;
 
   return (
-    <View style={styles.root}>
+    <ThemeView style={styles.root}>
       <Header />
       <View style={styles.topRow}>
         <View>
@@ -61,7 +62,7 @@ export default function NotificationsScreen() {
           <NotificationItem notification={item} onMarkRead={handleMarkRead} showAction />
         )}
       />
-    </View>
+    </ThemeView>
   );
 }
 

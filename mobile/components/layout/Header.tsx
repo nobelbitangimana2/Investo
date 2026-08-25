@@ -6,6 +6,7 @@ import { useAuthStore } from '@/lib/auth-store';
 import { COLORS } from '@/constants/config';
 import { getInitials } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/lib/theme';
 
 interface HeaderProps {
   title?: string;
@@ -18,6 +19,7 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const { unreadCount } = useNotificationStore();
+  const { theme, colors, toggleTheme } = useTheme();
 
   const notifRoute =
     user?.role === 'admin' ? '/(admin)/notifications'
@@ -25,10 +27,10 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
     : '/(client)/notifications';
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       {showBack ? (
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
-          <Ionicons name="arrow-back" size={22} color={COLORS.gray900} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
       ) : (
         <View style={styles.brand}>
@@ -37,16 +39,19 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
             style={styles.logoImg}
             resizeMode="cover"
           />
-          <Text style={styles.brandName}>Investo</Text>
+          <Text style={[styles.brandName, { color: colors.primary }]}>Investo</Text>
         </View>
       )}
 
-      {title ? <Text style={styles.title}>{title}</Text> : <View style={styles.flex1} />}
+      {title ? <Text style={[styles.title, { color: colors.text }]}>{title}</Text> : <View style={styles.flex1} />}
 
       <View style={styles.right}>
+        <TouchableOpacity style={[styles.iconBtn, { backgroundColor: colors.surfaceMuted }]} onPress={toggleTheme} accessibilityLabel={theme === 'dark' ? 'Use light mode' : 'Use dark mode'}>
+          <Ionicons name={theme === 'dark' ? 'sunny-outline' : 'moon-outline'} size={20} color={colors.text} />
+        </TouchableOpacity>
         {showNotifications && (
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push(notifRoute as never)}>
-            <Ionicons name="notifications-outline" size={22} color={COLORS.gray700} />
+            <Ionicons name="notifications-outline" size={22} color={colors.textMuted} />
             {unreadCount > 0 && (
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : String(unreadCount)}</Text>

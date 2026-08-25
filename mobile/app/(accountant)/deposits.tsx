@@ -106,7 +106,7 @@ export default function AccountantDepositsScreen() {
             <Image source={{ uri: selected.receiptUrl }} style={styles.receipt} resizeMode="contain" />
           )}
           {[
-            ['Client', selected.fullName], ['Bank', selected.bank],
+            ['Client', selected.fullName], selected.phoneNumber ? ['Phone', selected.phoneNumber] : null, ['Bank', selected.bank],
             ['Amount', formatCurrency(toNumber(selected.amount))],
             ['Date', formatDate(selected.depositDate)],
             ['Reference', selected.referenceNumber],

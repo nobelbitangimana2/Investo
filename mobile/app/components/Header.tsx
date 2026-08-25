@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { View, Pressable, Modal, Text, StyleSheet, Platform } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +12,7 @@ import { COLORS } from '@/constants/config';
 export default function Header() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const insets = useSafeAreaInsets();
 
   async function signOut() {
     try {
@@ -26,15 +29,22 @@ export default function Header() {
         <Ionicons name="ellipsis-vertical" size={22} color={COLORS.navy} />
       </Pressable>
 
-      <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal
+        visible={open}
+        transparent
+        animationType="fade"
+        statusBarTranslucent={false}
+        onRequestClose={() => setOpen(false)}
+      >
+        <StatusBar style="dark" backgroundColor={COLORS.white} />
         <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <View style={styles.menu}>
+          <View style={[styles.menu, { marginTop: insets.top + 18 }]}>
             <Pressable style={styles.menuItem} onPress={() => { setOpen(false); router.push('/settings'); }}>
               <Text style={styles.menuText}>{t('nav.settings') || 'Settings'}</Text>
             </Pressable>
             <View style={styles.divider} />
             <Pressable style={styles.menuItem} onPress={async () => { setOpen(false); await signOut(); }}>
-              <Text style={[styles.menuText, { color: COLORS.danger || '#d9534f' }]}>{t('auth.signOut') || 'Sign out'}</Text>
+              <Text style={[styles.menuText, { color: COLORS.danger || '#d9534f' }]}>{t('common.logout') || 'Sign out'}</Text>
             </Pressable>
           </View>
         </Pressable>

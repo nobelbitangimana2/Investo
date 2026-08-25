@@ -3,6 +3,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/config';
 import { timeAgo } from '@/lib/utils';
 import type { Notification } from '@/types';
+import { useTranslation } from 'react-i18next';
+import { getNotificationText } from '@/lib/notification-text';
+import { useTheme } from '@/lib/theme';
 
 const TYPE_ICONS: Record<string, { name: keyof typeof Ionicons.glyphMap; color: string }> = {
   deposit: { name: 'wallet', color: COLORS.blue },
@@ -19,10 +22,13 @@ interface Props {
 }
 
 export function NotificationItem({ notification: n, onPress, onMarkRead, showAction }: Props) {
+  const { t } = useTranslation();
+  const text = getNotificationText(n, t);
+  const { theme, colors } = useTheme();
   const cfg = TYPE_ICONS[n.type] ?? TYPE_ICONS.system;
   return (
     <TouchableOpacity
-      style={[styles.container, !n.read && styles.unread]}
+      style={[styles.container, { borderBottomColor: colors.border, backgroundColor: !n.read ? (theme === 'dark' ? '#122544' : '#eff6ff') : colors.surface }]}
       onPress={() => onPress?.(n)}
       activeOpacity={0.7}
     >
@@ -30,9 +36,9 @@ export function NotificationItem({ notification: n, onPress, onMarkRead, showAct
         <Ionicons name={cfg.name} size={18} color={cfg.color} />
       </View>
       <View style={styles.content}>
-        <Text style={[styles.title, !n.read && styles.boldTitle]}>{n.title}</Text>
-        <Text style={styles.message} numberOfLines={2}>{n.message}</Text>
-        <Text style={styles.time}>{timeAgo(n.date)}</Text>
+        <Text style={[styles.title, { color: !n.read ? colors.text : colors.textMuted }, !n.read && styles.boldTitle]}>{text.title}</Text>
+        <Text style={[styles.message, { color: colors.textMuted }]} numberOfLines={2}>{text.message}</Text>
+        <Text style={[styles.time, { color: colors.textSubtle }]}>{timeAgo(n.date)}</Text>
       </View>
       <View style={styles.right}>
         {!n.read && <View style={styles.dot} />}

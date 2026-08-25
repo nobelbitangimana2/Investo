@@ -1,5 +1,6 @@
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { COLORS } from '@/constants/config';
+import { useTheme } from '@/lib/theme';
 
 interface CardProps {
   children: React.ReactNode;
@@ -9,9 +10,10 @@ interface CardProps {
 }
 
 export function Card({ children, title, style, noPadding }: CardProps) {
+  const { colors } = useTheme();
   return (
-    <View style={[styles.card, style]}>
-      {title ? <Text style={styles.title}>{title}</Text> : null}
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, style]}>
+      {title ? <Text style={[styles.title, { color: colors.text }]}>{title}</Text> : null}
       <View style={noPadding ? undefined : styles.content}>{children}</View>
     </View>
   );
