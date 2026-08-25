@@ -7,6 +7,7 @@ import { COLORS } from '@/constants/config';
 import { getInitials } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/lib/theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   title?: string;
@@ -20,6 +21,7 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
   const { user } = useAuthStore();
   const { unreadCount } = useNotificationStore();
   const { theme, colors, toggleTheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const notifRoute =
     user?.role === 'admin' ? '/(admin)/notifications'
@@ -27,7 +29,7 @@ export function Header({ title, showBack, showNotifications = true, showAvatar =
     : '/(client)/notifications';
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border, paddingTop: insets.top + 12 }]}>
       {showBack ? (
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
           <Ionicons name="arrow-back" size={22} color={colors.text} />

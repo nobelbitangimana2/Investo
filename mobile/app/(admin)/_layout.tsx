@@ -2,22 +2,22 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '@/constants/config';
 import { useTranslation } from 'react-i18next';
-import Header from '@/app/components/Header';
+import { useTheme } from '@/lib/theme';
 
 export default function AdminLayout() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerTitle: '',
-        headerStyle: { backgroundColor: COLORS.white, shadowColor: 'transparent', elevation: 0 },
-        headerLeft: () => <Header />,
-        tabBarActiveTintColor: COLORS.navy,
-        tabBarInactiveTintColor: COLORS.gray400,
+        headerStyle: { backgroundColor: colors.surface, shadowColor: 'transparent', elevation: 0 },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSubtle,
         tabBarStyle: {
-          backgroundColor: COLORS.white,
-          borderTopColor: COLORS.gray100,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           height: 60,
           paddingBottom: 8,
         },

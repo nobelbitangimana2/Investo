@@ -8,10 +8,12 @@ import { useTranslation } from 'react-i18next';
 import { clearTokens } from '@/lib/secure-storage';
 import { useAuthStore } from '@/lib/auth-store';
 import { COLORS } from '@/constants/config';
+import { useTheme } from '@/lib/theme';
 
 export default function Header() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
   async function signOut() {
@@ -24,9 +26,9 @@ export default function Header() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
       <Pressable accessibilityLabel="open-menu" onPress={() => setOpen(true)} style={styles.button}>
-        <Ionicons name="ellipsis-vertical" size={22} color={COLORS.navy} />
+        <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
       </Pressable>
 
       <Modal
@@ -38,9 +40,9 @@ export default function Header() {
       >
         <StatusBar style="dark" backgroundColor={COLORS.white} />
         <Pressable style={styles.overlay} onPress={() => setOpen(false)}>
-          <View style={[styles.menu, { marginTop: insets.top + 18 }]}>
+          <View style={[styles.menu, { marginTop: insets.top + 18, backgroundColor: colors.surface }]}>
             <Pressable style={styles.menuItem} onPress={() => { setOpen(false); router.push('/settings'); }}>
-              <Text style={styles.menuText}>{t('nav.settings') || 'Settings'}</Text>
+              <Text style={[styles.menuText, { color: colors.text }]}>{t('nav.settings') || 'Settings'}</Text>
             </Pressable>
             <View style={styles.divider} />
             <Pressable style={styles.menuItem} onPress={async () => { setOpen(false); await signOut(); }}>
