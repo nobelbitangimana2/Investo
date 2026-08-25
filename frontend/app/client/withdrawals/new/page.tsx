@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import type { Investment, PartnerBank } from "@/types";
+import type { Investment, PartnerBank, Bank } from "@/types";
 
 const MOBILE_MONEY = ["Lumicash", "Ecocash"];
 
@@ -99,7 +99,7 @@ export default function NewWithdrawalPage() {
     }
 
     try {
-      await submitWithdrawal(user.id, data);
+      await submitWithdrawal(user.id, { ...data, bankToTransferTo: data.bankToTransferTo as Bank });
       toast.success(t("successMessage"));
       router.push("/client/withdrawals");
     } catch (err) {

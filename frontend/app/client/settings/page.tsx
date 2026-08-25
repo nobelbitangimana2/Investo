@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { getInitials } from "@/lib/utils";
-import type { ClientProfile } from "@/types";
+import type { ClientProfile, Bank } from "@/types";
 
 export default function ClientSettingsPage() {
   const { user, updateUser } = useAuthStore();
@@ -84,7 +84,7 @@ export default function ClientSettingsPage() {
   // ── Profile save ───────────────────────────────────────────────────
   async function onSubmit(data: ProfileFormValues) {
     if (!user) return;
-    await updateClientProfile(user.id, data);
+    await updateClientProfile(user.id, { ...data, bankName: data.bankName as Bank });
     toast.success(t("profileSuccess"));
   }
 

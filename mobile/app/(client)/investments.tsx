@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   breakdown: { backgroundColor: COLORS.gray50, borderRadius: 10, padding: 12, gap: 8, marginBottom: 12 },
   breakdownRow: { flexDirection: 'row', justifyContent: 'space-between' },
   breakdownKey: { fontSize: 13, color: COLORS.gray500 },
-  breakdownVal: { fontSize: 13, fontWeight: '600', color: COLORS.gray800 },
+  breakdownVal: { fontSize: 13, fontWeight: '600', color: COLORS.gray700 },
   breakdownTotal: { borderTopWidth: 1, borderTopColor: COLORS.gray200, paddingTop: 8, marginTop: 2 },
   breakdownTotalKey: { fontSize: 13, fontWeight: '700', color: COLORS.gray700 },
   breakdownTotalVal: { fontSize: 14, fontWeight: '700', color: COLORS.gray900 },

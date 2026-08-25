@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   listItem: { flexDirection: 'row', alignItems: 'center', padding: 14, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   unread: { backgroundColor: '#eff6ff' },
   listMain: { flex: 1 },
-  listTitle: { fontSize: 13, fontWeight: '600', color: COLORS.gray800 },
+  listTitle: { fontSize: 13, fontWeight: '600', color: COLORS.gray700 },
   listSub: { fontSize: 12, color: COLORS.gray400, marginTop: 2 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.blue },
   empty: { padding: 16, fontSize: 13, color: COLORS.gray400, textAlign: 'center' },

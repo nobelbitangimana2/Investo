@@ -35,7 +35,7 @@ export default function AccountantReportsScreen() {
       <View style={styles.root}>
         <Header />
         <View style={styles.noPermission}>
-          <Ionicons name="lock-closed" size={48} color={COLORS.gray300} />
+          <Ionicons name="lock-closed" size={48} color={COLORS.gray200} />
           <Text style={styles.noPermTitle}>{t('admin.reports.noPermission')}</Text>
           <Text style={styles.noPermSub}>{t('admin.reports.contactAdmin')}</Text>
         </View>
@@ -114,7 +114,7 @@ const styles = StyleSheet.create({
   statusAmount: { fontSize: 13, fontWeight: '700', color: COLORS.gray900 },
   depRow: { flexDirection: 'row', alignItems: 'center', padding: 12, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   depMain: { flex: 1 },
-  depName: { fontSize: 13, fontWeight: '600', color: COLORS.gray800 },
+  depName: { fontSize: 13, fontWeight: '600', color: COLORS.gray700 },
   depMeta: { fontSize: 11, color: COLORS.gray400, marginTop: 2 },
   depAmount: { fontSize: 13, fontWeight: '700', color: COLORS.gray900 },
   noPermission: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, gap: 12 },

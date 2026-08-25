@@ -43,6 +43,7 @@ function normalizeUser(u: Record<string, unknown>): User {
     role: (u.role as string).toLowerCase() as User["role"],
     status: (u.status as string).toLowerCase() as User["status"],
     profilePicture: u.profilePicture as string | undefined,
+    phone: (u.phone ?? (u.clientProfile as Record<string, unknown> | undefined)?.phone) as string | undefined,
     createdAt: u.createdAt as string,
     updatedAt: u.updatedAt as string,
   };
@@ -58,6 +59,7 @@ function normalizeDeposit(d: Record<string, unknown>): Deposit {
     submittedAt: (d.submittedAt ?? d.createdAt) as string,
     verifiedBy: (d.verifiedById as string | undefined) ?? undefined,
     verifiedAt: (d.verifiedAt as string | undefined) ?? undefined,
+    phoneNumber: ((d.client as Record<string, unknown> | undefined)?.phone as string | undefined) ?? undefined,
   };
 }
 
@@ -67,6 +69,7 @@ function normalizeWithdrawal(w: Record<string, unknown>): Withdrawal {
     amount: toNumber(w.amount),
     status: (w.status as string).toLowerCase() as Withdrawal["status"],
     bankToTransferTo: normBank(w.bankToTransferTo as string),
+    phoneNumber: ((w.client as Record<string, unknown> | undefined)?.phone as string | undefined) ?? (w.mobileMoney as Record<string, unknown> | undefined)?.phoneNumber as string | undefined,
   };
 }
 
@@ -662,7 +665,7 @@ import type { PartnerBank } from "@/types";
 export async function getActivePartnerBanks(): Promise<PartnerBank[]> {
   const res = await apiGet<unknown>("/partner-banks/active");
   return unwrapPage<Record<string, unknown>>(res).map((bank) => ({
-    ...(bank as PartnerBank),
+    ...(bank as unknown as PartnerBank),
     name: normalizeBankName(String((bank as Record<string, unknown>).name ?? "")),
   }));
 }
@@ -671,7 +674,7 @@ export async function getActivePartnerBanks(): Promise<PartnerBank[]> {
 export async function getAllPartnerBanks(): Promise<PartnerBank[]> {
   const res = await apiGet<unknown>("/partner-banks");
   return unwrapPage<Record<string, unknown>>(res).map((bank) => ({
-    ...(bank as PartnerBank),
+    ...(bank as unknown as PartnerBank),
     name: normalizeBankName(String((bank as Record<string, unknown>).name ?? "")),
   }));
 }

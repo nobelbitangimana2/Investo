@@ -114,6 +114,7 @@ export default function ClientDepositsPage() {
             <div className="space-y-3">
               {([
                 [t("fieldBank"), viewTarget.bank],
+                viewTarget.phoneNumber ? [t("fieldPhone"), viewTarget.phoneNumber] : null,
                 [t("fieldAccount"), viewTarget.accountNumber],
                 [t("fieldAmount"), formatCurrency(viewTarget.amount)],
                 [t("fieldDate"), formatDate(viewTarget.depositDate)],

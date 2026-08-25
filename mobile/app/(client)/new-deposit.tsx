@@ -149,19 +149,19 @@ export default function NewDepositScreen() {
             <Text style={styles.label}>{t('client.deposits.form.bank')}</Text>
             <View style={styles.chipRow}>
               <Controller control={control} name="bank" render={({ field }) =>
-                bankList.map((b) => (
+                <>{bankList.map((b) => (
                   <TouchableOpacity
                     key={b}
                     style={[styles.chip, field.value === b && styles.chipActive]}
                     onPress={() => {
                       field.onChange(b);
-                      // Clear account number when bank changes
-                      setValue('accountNumber', '');
+                      const partnerBank = partnerBanks.find((bank) => bank.name === b);
+                      setValue('accountNumber', partnerBank?.accountNumber ?? '');
                     }}
                   >
                     <Text style={[styles.chipText, field.value === b && styles.chipTextActive]}>{b}</Text>
                   </TouchableOpacity>
-                ))
+                ))}</>
               } />
             </View>
             {errors.bank && <Text style={styles.errorText}>{errors.bank.message}</Text>}
@@ -217,7 +217,7 @@ export default function NewDepositScreen() {
             <Text style={styles.label}>{t('client.deposits.form.investmentPeriod')}</Text>
             <View style={styles.chipRow}>
               <Controller control={control} name="investmentPeriod" render={({ field }) =>
-                periodList.map((p) => (
+                <>{periodList.map((p) => (
                   <TouchableOpacity
                     key={p}
                     style={[styles.chip, field.value === p && styles.chipActive]}
@@ -225,7 +225,7 @@ export default function NewDepositScreen() {
                   >
                     <Text style={[styles.chipText, field.value === p && styles.chipTextActive]}>{p}</Text>
                   </TouchableOpacity>
-                ))
+                ))}</>
               } />
             </View>
             {errors.investmentPeriod && <Text style={styles.errorText}>{errors.investmentPeriod.message}</Text>}

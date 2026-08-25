@@ -133,7 +133,7 @@ export default function NewWithdrawalScreen() {
             <Text style={styles.label}>{t('client.withdrawals.form.bankToTransfer')}</Text>
             <View style={styles.chipRow}>
               <Controller control={control} name="bankToTransferTo" render={({ field }) =>
-                bankList.map((b) => (
+                <>{bankList.map((b) => (
                   <TouchableOpacity
                     key={b}
                     style={[styles.chip, field.value === b && styles.chipActive]}
@@ -141,7 +141,7 @@ export default function NewWithdrawalScreen() {
                   >
                     <Text style={[styles.chipText, field.value === b && styles.chipTextActive]}>{b}</Text>
                   </TouchableOpacity>
-                ))
+                ))}</>
               } />
             </View>
             {errors.bankToTransferTo && <Text style={styles.errorText}>{errors.bankToTransferTo.message}</Text>}

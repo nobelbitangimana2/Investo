@@ -13,7 +13,7 @@ import { InvestoBarChart, InvestoPieChart, InvestoLineChart } from "@/components
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { PiggyBank, TrendingUp, Users, DollarSign } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Deposit, Investment, User } from "@/types";
+import type { Deposit, Investment, User, Withdrawal } from "@/types";
 
 type ReportTab = "deposits" | "investments" | "clients";
 
@@ -23,15 +23,30 @@ export default function AdminReportsPage() {
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [clients, setClients] = useState<User[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const toast = useToast();
 
   useEffect(() => {
-    Promise.all([getDeposits(), getInvestments(), getClients()]).then(([d, i, c]) => {
+    Promise.all([getDeposits(), getInvestments(), getClients(), getWithdrawals()]).then(([d, i, c, w]) => {
       setDeposits(d);
       setInvestments(i);
       setClients(c);
+      setWithdrawals(w);
     });
   }, []);
+
+  function exportPendingPdf() {
+    const rows = [
+      ...deposits.filter((d) => d.status === "pending").map((d) => `<tr><td>Deposit</td><td>${d.fullName}</td><td>${d.phoneNumber ?? ""}</td><td>${d.bank}</td><td>${formatCurrency(d.amount)}</td></tr>`),
+      ...withdrawals.filter((w) => w.status === "pending").map((w) => `<tr><td>Withdrawal</td><td>${w.fullName}</td><td>${w.phoneNumber ?? ""}</td><td>${w.bankToTransferTo}</td><td>${formatCurrency(w.amount)}</td></tr>`),
+    ].join("");
+    const report = window.open("", "_blank", "width=900,height=700");
+    if (!report) return;
+    report.document.write(`<html><head><title>Investo pending requests</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#111827}h1{color:#0820ae}table{border-collapse:collapse;width:100%;margin-top:24px}th,td{border:1px solid #d1d5db;padding:8px;text-align:left}th{background:#eff6ff}</style></head><body><h1>Investo pending requests</h1><p>Deposits and withdrawals awaiting review</p><table><thead><tr><th>Type</th><th>Client</th><th>Phone</th><th>Bank</th><th>Amount</th></tr></thead><tbody>${rows || "<tr><td colspan='5'>No pending requests</td></tr>"}</tbody></table></body></html>`);
+    report.document.close();
+    report.focus();
+    report.print();
+  }
 
   function mockExport(format: string) {
     toast.success(t("exportMessage"));
@@ -90,7 +105,7 @@ export default function AdminReportsPage() {
           <p className="text-gray-500 mt-0.5 text-sm">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => mockExport("PDF")}>
+          <Button variant="outline" size="sm" onClick={exportPendingPdf}>
             <Download className="h-4 w-4" /> {t("exportPDF")}
           </Button>
           <Button variant="outline" size="sm" onClick={() => mockExport("Excel")}>

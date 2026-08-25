@@ -6,6 +6,7 @@ export const API_BASE: string =
 
 // Fallback bank list used only when the partner-banks API hasn't responded yet
 export const FALLBACK_BANKS = ['Bancobu', 'BCB', 'KCB', 'Ecobank', 'Lumicash', 'Ecocash'] as const;
+export const INVESTMENT_PERIODS = ['Weekly', 'Monthly', '3 Months', '6 Months', '1 Year', '5 Years'] as const;
 
 export const MOBILE_MONEY_BANKS = ['Lumicash', 'Ecocash'] as const;
 
@@ -19,10 +20,12 @@ export const COLORS = {
   gray50: '#f9fafb',
   gray100: '#f3f4f6',
   gray200: '#e5e7eb',
+  gray300: '#d1d5db',
   gray400: '#9ca3af',
   gray500: '#6b7280',
   gray600: '#4b5563',
   gray700: '#374151',
+  gray800: '#1f2937',
   gray900: '#111827',
   white: '#ffffff',
   pending: '#f59e0b',
@@ -30,6 +33,7 @@ export const COLORS = {
   rejected: '#ef4444',
   active: '#3b82f6',
   matured: '#8b5cf6',
+  danger: '#d9534f',
 };
 
 export const STATUS_COLORS: Record<string, string> = {

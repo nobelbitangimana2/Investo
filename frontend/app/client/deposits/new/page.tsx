@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/useToast";
 import { formatCurrency, calculateExpectedInterest } from "@/lib/utils";
 import { useTranslations } from "next-intl";
-import type { InterestRate, PartnerBank } from "@/types";
+import type { InterestRate, PartnerBank, Bank } from "@/types";
 
 const PERIODS = ["Weekly", "Monthly", "3 Months", "6 Months", "1 Year", "5 Years"];
 
@@ -35,6 +35,7 @@ export default function NewDepositPage() {
     control,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<DepositFormValues>({
     resolver: zodResolver(depositSchema),
@@ -63,6 +64,12 @@ export default function NewDepositPage() {
   // Find selected partner bank — used for autofill card and account validation
   const selectedPartnerBank = partnerBanks.find((b) => b.name === watchBank) ?? null;
 
+  useEffect(() => {
+    if (selectedPartnerBank) {
+      setValue("accountNumber", selectedPartnerBank.accountNumber, { shouldValidate: true });
+    }
+  }, [selectedPartnerBank, setValue]);
+
   // Account number mismatch check (only validate when both are filled)
   const accountMismatch =
     selectedPartnerBank &&
@@ -79,7 +86,7 @@ export default function NewDepositPage() {
     }
 
     try {
-      await submitDeposit(user.id, { ...data, receipt: receipt ?? undefined });
+      await submitDeposit(user.id, { ...data, bank: data.bank as Bank, receipt: receipt ?? undefined });
       toast.success(t("successMessage"));
       router.push("/client/deposits");
     } catch {

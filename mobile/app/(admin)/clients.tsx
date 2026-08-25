@@ -89,5 +89,5 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 16 },
   stat: {},
   statLabel: { fontSize: 11, color: COLORS.gray400 },
-  statVal: { fontSize: 13, fontWeight: '700', color: COLORS.gray800, marginTop: 2 },
+  statVal: { fontSize: 13, fontWeight: '700', color: COLORS.gray700, marginTop: 2 },
 });

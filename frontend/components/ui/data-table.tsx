@@ -95,16 +95,16 @@ export function DataTable<T extends { id?: string }>({
         </div>
       )}
 
-      <div className="rounded-xl border border-gray-200 overflow-hidden">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm" role="table">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
               <tr>
                 {columns.map((col) => (
                   <th
                     key={String(col.key)}
                     className={cn(
-                      "px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide",
+                      "px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide",
                       col.sortable && "cursor-pointer select-none hover:text-gray-900",
                       col.className
                     )}
@@ -119,13 +119,13 @@ export function DataTable<T extends { id?: string }>({
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     {columns.map((col) => (
                       <td key={String(col.key)} className="px-4 py-3">
-                        <div className="h-4 bg-gray-100 rounded animate-pulse" />
+                        <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
                       </td>
                     ))}
                   </tr>
@@ -140,10 +140,10 @@ export function DataTable<T extends { id?: string }>({
                 paginated.map((row, i) => (
                   <tr
                     key={(row as Record<string, unknown>).id as string ?? i}
-                    className="hover:bg-gray-50/70 transition-colors"
+                    className="hover:bg-gray-50/70 dark:hover:bg-gray-800/70 transition-colors"
                   >
                     {columns.map((col) => (
-                      <td key={String(col.key)} className={cn("px-4 py-3 text-gray-700", col.className)}>
+                      <td key={String(col.key)} className={cn("px-4 py-3 text-gray-700 dark:text-gray-200", col.className)}>
                         {col.cell
                           ? col.cell(row)
                           : String((row as Record<string, unknown>)[String(col.key)] ?? "—")}

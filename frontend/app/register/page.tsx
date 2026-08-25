@@ -51,7 +51,7 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterFormValues) {
     setServerError(null);
     try {
-      await registerUser({ firstName: data.firstName, middleName: data.middleName, lastName: data.lastName, email: data.email, password: data.password });
+      await registerUser({ firstName: data.firstName, middleName: data.middleName, lastName: data.lastName, email: data.email, password: data.password, phone: data.phone });
       setRegisteredEmail(data.email);
       setRegistered(true);
     } catch (err) {
@@ -140,6 +140,9 @@ export default function RegisterPage() {
 
             <Input label={`${t("emailAddress")} *`} type="email" placeholder="you@example.com"
               autoComplete="email" error={errors.email?.message} {...register("email")} />
+
+            <Input label={`${t("phoneNumber")} *`} type="tel" placeholder={t("phonePlaceholder")}
+              autoComplete="tel" error={errors.phone?.message} {...register("phone")} />
 
             <div className="space-y-2">
               <div className="relative">

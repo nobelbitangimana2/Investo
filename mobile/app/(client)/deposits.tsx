@@ -87,7 +87,7 @@ export default function DepositsScreen() {
             [t('client.deposits.fieldPeriod'), selected.investmentPeriod],
             [t('client.deposits.fieldStatus'), selected.status],
             selected.rejectionNote ? [t('client.deposits.fieldRejectionNote'), selected.rejectionNote] : null,
-          ].filter(Boolean).map(([k, v]) => (
+          ].filter((row): row is [string, string] => row !== null).map(([k, v]) => (
             <View key={k as string} style={styles.row}>
               <Text style={styles.rowKey}>{k as string}</Text>
               <Text style={styles.rowVal}>{v as string}</Text>
@@ -119,5 +119,5 @@ const styles = StyleSheet.create({
   receipt: { width: '100%', height: 160, borderRadius: 10, marginBottom: 12, backgroundColor: COLORS.gray50 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: COLORS.gray100 },
   rowKey: { fontSize: 13, color: COLORS.gray500 },
-  rowVal: { fontSize: 13, fontWeight: '600', color: COLORS.gray800, maxWidth: '60%', textAlign: 'right' },
+  rowVal: { fontSize: 13, fontWeight: '600', color: COLORS.gray700, maxWidth: '60%', textAlign: 'right' },
 });

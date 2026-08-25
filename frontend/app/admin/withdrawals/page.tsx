@@ -90,6 +90,7 @@ export default function AdminWithdrawalsPage() {
             <div className="space-y-3">
               {([
                 [t("fieldClient"), viewTarget.fullName], [t("fieldBank"), viewTarget.bankToTransferTo],
+                viewTarget.phoneNumber ? [t("fieldPhone"), viewTarget.phoneNumber] : null,
                 [t("fieldAccount"), viewTarget.accountNumber], [t("fieldRecipient"), viewTarget.recipientName],
                 [t("fieldAmount"), formatCurrency(viewTarget.amount)], [t("fieldStatus"), viewTarget.status],
                 [t("fieldRequested"), formatDateTime(viewTarget.requestedAt)],

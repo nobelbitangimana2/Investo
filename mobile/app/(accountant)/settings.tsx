@@ -28,10 +28,11 @@ export default function AccountantSettingsScreen() {
 
   useEffect(() => {
     getMe().then((u) => {
-      setPhone((u as Record<string, string>).phone ?? '');
-      setAddress((u as Record<string, string>).address ?? '');
-      setCity((u as Record<string, string>).city ?? '');
-      setProvince((u as Record<string, string>).province ?? '');
+      const contact = u as unknown as { phone?: string; address?: string; city?: string; province?: string };
+      setPhone(contact.phone ?? '');
+      setAddress(contact.address ?? '');
+      setCity(contact.city ?? '');
+      setProvince(contact.province ?? '');
     }).catch(() => {});
   }, []);
 

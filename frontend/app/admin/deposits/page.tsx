@@ -108,6 +108,7 @@ export default function AdminDepositsPage() {
             <div className="space-y-3">
               {([
                 [t("fieldClient"), viewTarget.fullName], [t("fieldBank"), viewTarget.bank],
+                viewTarget.phoneNumber ? [t("fieldPhone"), viewTarget.phoneNumber] : null,
                 [t("fieldAccount"), viewTarget.accountNumber], [t("fieldAmount"), formatCurrency(viewTarget.amount)],
                 [t("fieldDate"), formatDate(viewTarget.depositDate)], [t("fieldReference"), viewTarget.referenceNumber],
                 [t("fieldPeriod"), viewTarget.investmentPeriod], [t("fieldStatus"), viewTarget.status],

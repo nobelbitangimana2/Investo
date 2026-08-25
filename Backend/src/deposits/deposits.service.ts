@@ -110,7 +110,7 @@ export class DepositsService {
     const [deposits, total] = await Promise.all([
       this.prisma.deposit.findMany({
         where,
-        include: { client: { select: { id: true, name: true, email: true } } },
+        include: { client: { select: { id: true, name: true, email: true, phone: true } } },
         skip,
         take: limit,
         orderBy: { submittedAt: 'desc' },
@@ -126,7 +126,7 @@ export class DepositsService {
     const deposit = await this.prisma.deposit.findUnique({
       where: { id },
       include: {
-        client: { select: { id: true, name: true, email: true } },
+        client: { select: { id: true, name: true, email: true, phone: true } },
         verifiedBy: { select: { id: true, name: true } },
         investment: true,
       },

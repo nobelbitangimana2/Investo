@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   unreadRow: { backgroundColor: '#eff6ff' },
   unreadDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: COLORS.blue, marginRight: 8 },
   listMain: { flex: 1 },
-  listTitle: { fontSize: 13, fontWeight: '600', color: COLORS.gray800 },
+  listTitle: { fontSize: 13, fontWeight: '600', color: COLORS.gray700 },
   listSub: { fontSize: 12, color: COLORS.gray400, marginTop: 2 },
   empty: { padding: 16, fontSize: 13, color: COLORS.gray400, textAlign: 'center' },
 });

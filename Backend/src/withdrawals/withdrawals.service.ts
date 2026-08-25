@@ -152,7 +152,7 @@ export class WithdrawalsService {
       this.prisma.withdrawal.findMany({
         where,
         include: {
-          client: { select: { id: true, name: true, email: true } },
+          client: { select: { id: true, name: true, email: true, phone: true } },
           mobileMoney: true,
         },
         skip,
@@ -175,7 +175,7 @@ export class WithdrawalsService {
     const w = await this.prisma.withdrawal.findUnique({
       where: { id },
       include: {
-        client: { select: { id: true, name: true, email: true } },
+        client: { select: { id: true, name: true, email: true, phone: true } },
         mobileMoney: true,
       },
     });
