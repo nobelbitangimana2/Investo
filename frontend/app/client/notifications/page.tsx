@@ -11,6 +11,7 @@ import { timeAgo } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { Notification } from "@/types";
+import { getNotificationText } from "@/lib/notification-text";
 
 const typeColors: Record<string, string> = {
   deposit: "bg-blue-500",
@@ -22,6 +23,7 @@ const typeColors: Record<string, string> = {
 export default function ClientNotificationsPage() {
   const { user } = useAuthStore();
   const t = useTranslations("client.notifications");
+  const tNotification = useTranslations("notificationContent");
   const { setUnreadCount } = useNotificationStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -79,7 +81,9 @@ export default function ClientNotificationsPage() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {notifications.map((n) => (
+          {notifications.map((n) => {
+            const text = getNotificationText(n, tNotification);
+            return (
             <div
               key={n.id}
               className={cn(
@@ -92,9 +96,9 @@ export default function ClientNotificationsPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className={cn("text-sm font-medium", !n.read ? "text-gray-900" : "text-gray-700")}>
-                      {n.title}
+                      {text.title}
                     </p>
-                    <p className="text-sm text-gray-500 mt-0.5">{n.message}</p>
+                    <p className="text-sm text-gray-500 mt-0.5">{text.message}</p>
                   </div>
                   <span className="text-xs text-gray-400 whitespace-nowrap flex-shrink-0">
                     {timeAgo(n.date)}
@@ -109,7 +113,8 @@ export default function ClientNotificationsPage() {
                   {t("markRead")}
                 </button>
               )}
-            </div>
+            </div>);
+          })}
           ))}
         </div>
       )}

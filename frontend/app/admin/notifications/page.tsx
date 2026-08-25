@@ -12,6 +12,7 @@ import { timeAgo } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { Notification } from "@/types";
+import { getNotificationText } from "@/lib/notification-text";
 
 const typeConfig: Record<string, { color: string; icon: React.ReactNode; route: string }> = {
   deposit: {
@@ -40,6 +41,7 @@ export default function AdminNotificationsPage() {
   const { user } = useAuthStore();
   const router = useRouter();
   const t = useTranslations("admin.notifications");
+  const tNotification = useTranslations("notificationContent");
   const { setUnreadCount } = useNotificationStore();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,6 +108,7 @@ export default function AdminNotificationsPage() {
         <div className="space-y-2">
           {notifications.map((n) => {
             const config = typeConfig[n.type] ?? typeConfig.system;
+            const text = getNotificationText(n, tNotification);
             return (
               <button
                 key={n.id}
@@ -123,9 +126,9 @@ export default function AdminNotificationsPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0">
                       <p className={cn("text-sm font-medium truncate", !n.read ? "text-gray-900" : "text-gray-700")}>
-                        {n.title}
+                        {text.title}
                       </p>
-                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-sm text-gray-500 mt-0.5 line-clamp-2">{text.message}</p>
                       <p className="text-xs text-navy-600 mt-1 font-medium">
                         {n.type === "deposit" ? t("goToDeposits") :
                          n.type === "withdrawal" ? t("goToWithdrawals") : t("view")}

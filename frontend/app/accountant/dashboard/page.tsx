@@ -18,10 +18,12 @@ import { InvestoBarChart } from "@/components/ui/charts";
 import { formatCurrency, formatDate, timeAgo } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import type { Deposit, Withdrawal, Notification } from "@/types";
+import { getNotificationText } from "@/lib/notification-text";
 
 export default function AccountantDashboard() {
   const { user } = useAuthStore();
   const t = useTranslations("accountant.dashboard");
+  const tNotification = useTranslations("notificationContent");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -142,6 +144,7 @@ export default function AccountantDashboard() {
             ) : (
               <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
                 {notifications.map((n) => (
+                  (() => { const text = getNotificationText(n, tNotification); return (
                   <div
                     key={n.id}
                     className={`flex items-start gap-3 px-4 py-3 ${
@@ -154,8 +157,8 @@ export default function AccountantDashboard() {
                       }`}
                     />
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-800 truncate">{n.title}</p>
-                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{n.message}</p>
+                      <p className="text-sm font-medium text-gray-800 truncate">{text.title}</p>
+                      <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{text.message}</p>
                       <p className="text-[10px] text-gray-400 mt-1">{timeAgo(n.date)}</p>
                     </div>
                     {n.type === "deposit" ? (
@@ -163,7 +166,7 @@ export default function AccountantDashboard() {
                     ) : n.type === "withdrawal" ? (
                       <ArrowUpFromLine className="h-4 w-4 flex-shrink-0 text-amber-400 mt-0.5" />
                     ) : null}
-                  </div>
+                  </div>); })()
                 ))}
               </div>
             )}

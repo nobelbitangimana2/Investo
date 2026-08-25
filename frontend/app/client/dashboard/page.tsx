@@ -12,10 +12,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { formatCurrency, formatDate, timeAgo } from "@/lib/utils";
 import type { Deposit, Withdrawal, Investment, Notification } from "@/types";
+import { getNotificationText } from "@/lib/notification-text";
 
 export default function ClientDashboard() {
   const { user } = useAuthStore();
   const t = useTranslations("client.dashboard");
+  const tNotification = useTranslations("notificationContent");
   const [deposits, setDeposits] = useState<Deposit[]>([]);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [investments, setInvestments] = useState<Investment[]>([]);
@@ -179,6 +181,7 @@ export default function ClientDashboard() {
             ) : (
               <div className="divide-y divide-gray-50">
                 {notifications.map((n) => (
+                  (() => { const text = getNotificationText(n, tNotification); return (
                   <div
                     key={n.id}
                     className={`flex items-start gap-3 px-6 py-3 ${!n.read ? "bg-blue-50/30" : ""}`}
@@ -189,10 +192,10 @@ export default function ClientDashboard() {
                       }`}
                     />
                     <div>
-                      <p className="text-sm font-medium text-gray-800">{n.title}</p>
+                      <p className="text-sm font-medium text-gray-800">{text.title}</p>
                       <p className="text-xs text-gray-400">{timeAgo(n.date)}</p>
                     </div>
-                  </div>
+                  </div>); })()
                 ))}
               </div>
             )}
