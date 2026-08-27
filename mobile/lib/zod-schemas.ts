@@ -30,7 +30,7 @@ const fb: TFunc = (key) => {
     'validation.referenceReq':       'Reference number is required',
     'validation.fullNameReq':        'Full name is required',
     'validation.recipientNameReq':   'Recipient name is required',
-    'validation.withdrawalMin':      'Minimum withdrawal is 50,000 BIF',
+    'validation.withdrawalMin':      'Minimum withdrawal is 10,000 BIF',
     'validation.rejectionNoteMin':   'Please provide a reason (at least 10 characters)',
     'validation.firstNameReq':       'First name is required',
     'validation.lastNameReq':        'Last name is required',
@@ -93,7 +93,7 @@ export const withdrawalSchema = z.object({
   recipientName:    z.string().min(2, fb('validation.recipientNameReq')),
   amount:           z.number({ invalid_type_error: fb('validation.amountNumber') })
                      .positive(fb('validation.amountPositive'))
-                     .min(50000, fb('validation.withdrawalMin')),
+                     .min(10000, fb('validation.withdrawalMin')),
 }).superRefine((data, ctx) => {
   const isMobile = (MOBILE_MONEY as readonly string[]).includes(data.bankToTransferTo);
   if (isMobile) {

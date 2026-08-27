@@ -48,7 +48,7 @@ const fallback: TFunc = (key: string) => {
     "validation.referenceReq":        "Reference number is required",
     "validation.fullNameReq":         "Full name is required",
     "validation.recipientNameReq":    "Recipient name is required",
-    "validation.withdrawalMin":       "Minimum withdrawal is 50,000 BIF",
+    "validation.withdrawalMin":       "Minimum withdrawal is 10,000 BIF",
     "validation.rejectionNoteMin":    "Please provide a reason (at least 10 characters)",
     "validation.firstNameReq":        "First name is required",
     "validation.lastNameReq":         "Last name is required",
@@ -120,7 +120,7 @@ export const withdrawalSchema = z.object({
   recipientName:    z.string().min(2, fallback("validation.recipientNameReq")),
   amount:           z.number({ invalid_type_error: fallback("validation.amountNumber") })
                      .positive(fallback("validation.amountPositive"))
-                     .min(50000, fallback("validation.withdrawalMin")),
+                     .min(10000, fallback("validation.withdrawalMin")),
 }).superRefine((data, ctx) => {
   const isMobile = ["Lumicash", "Ecocash"].includes(data.bankToTransferTo);
   if (isMobile) {
@@ -185,7 +185,7 @@ export function createSchemas(t: TFunc) {
       recipientName:    z.string().min(2, tr("validation.recipientNameReq")),
       amount:           z.number({ invalid_type_error: tr("validation.amountNumber") })
                          .positive(tr("validation.amountPositive"))
-                         .min(50000, tr("validation.withdrawalMin")),
+                         .min(10000, tr("validation.withdrawalMin")),
     }),
     deposit: z.object({
       fullName:         z.string().min(2, tr("validation.fullNameMin")),

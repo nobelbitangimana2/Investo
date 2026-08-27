@@ -29,8 +29,8 @@ export function StatCard({
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{title}</p>
-              <p className="mt-2 text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+            <p className="text-sm font-medium text-navy-800 dark:text-navy-300">{title}</p>
+              <p className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-300">{value}</p>
             {description && (
               <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{description}</p>
             )}
@@ -47,11 +47,11 @@ export function StatCard({
           </div>
           <div
             className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-xl bg-navy-50 dark:bg-navy-900/40",
+              "flex h-12 w-12 items-center justify-center rounded-xl bg-navy-100 dark:bg-navy-900/70",
               iconClassName
             )}
           >
-            <Icon className="h-6 w-6 text-navy-700" />
+            <Icon className="h-6 w-6 text-navy-700 dark:text-navy-300" />
           </div>
         </div>
       </CardContent>

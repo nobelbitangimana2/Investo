@@ -31,7 +31,7 @@ export class CreateWithdrawalDto {
 
   @ApiProperty({ example: 500000 })
   @IsNumber()
-  @Min(1000)
+  @Min(10000)
   amount: number;
 
   /** Derived helper — true when bankToTransferTo is a mobile money provider */

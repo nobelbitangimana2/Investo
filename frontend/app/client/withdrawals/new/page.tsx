@@ -249,7 +249,7 @@ export default function NewWithdrawalPage() {
                   <span className="font-semibold text-gray-600 dark:text-gray-300">
                     {formatCurrency(totalBalance)}
                   </span>
-                  {" "}· {t("minLabel")} {formatCurrency(1000)}
+                  {" "}· {t("minLabel")} {formatCurrency(10000)}
                 </p>
               )}
             </div>

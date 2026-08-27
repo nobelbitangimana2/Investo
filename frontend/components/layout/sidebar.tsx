@@ -74,7 +74,7 @@ export function Sidebar({ role }: SidebarProps) {
   const items = navItems.filter((item) => item.roles.includes(role));
 
   return (
-    <aside className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 min-h-screen flex flex-col">
+    <aside className="w-64 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
       <div className="p-6 border-b border-gray-100 dark:border-gray-800">
         <Link href={`/${role}/dashboard`} className="flex items-center gap-2">
           <Image
@@ -100,7 +100,7 @@ export function Sidebar({ role }: SidebarProps) {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-navy-50 dark:bg-navy-900 text-navy-700 dark:text-navy-300"
+                  ? "bg-navy-600 text-white shadow-sm"
                   : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100"
               )}
             >

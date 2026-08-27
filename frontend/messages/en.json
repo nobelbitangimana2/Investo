@@ -86,7 +86,7 @@
     "referenceReq":       "Reference number is required",
     "fullNameReq":        "Full name is required",
     "recipientNameReq":   "Recipient name is required",
-    "withdrawalMin":      "Minimum withdrawal is 50,000 BIF",
+    "withdrawalMin":      "Minimum withdrawal is 10,000 BIF",
     "rejectionNoteMin":   "Please provide a reason (at least 10 characters)",
     "firstNameReq":       "First name is required",
     "lastNameReq":        "Last name is required",

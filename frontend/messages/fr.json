@@ -86,7 +86,7 @@
     "referenceReq":       "Le numéro de référence est requis",
     "fullNameReq":        "Le nom complet est requis",
     "recipientNameReq":   "Le nom du bénéficiaire est requis",
-    "withdrawalMin":      "Le retrait minimum est de 50 000 BIF",
+    "withdrawalMin":      "Le retrait minimum est de 10 000 BIF",
     "rejectionNoteMin":   "Veuillez fournir un motif (au moins 10 caractères)",
     "firstNameReq":       "Le prénom est requis",
     "lastNameReq":        "Le nom est requis",
