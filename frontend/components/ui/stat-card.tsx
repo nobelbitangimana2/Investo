@@ -24,21 +24,31 @@ export function StatCard({
   className,
   iconClassName,
 }: StatCardProps) {
+  const tone = iconClassName?.match(/bg-(emerald|amber|purple|blue|red)-50/)?.[1] ?? "teal";
+  const toneClass = {
+    teal: "bg-gradient-to-br from-[#4a8f88] to-[#2f756f]",
+    emerald: "bg-gradient-to-br from-[#31a878] to-[#24845f]",
+    amber: "bg-gradient-to-br from-[#e4a11a] to-[#c77d08]",
+    purple: "bg-gradient-to-br from-[#6842bd] to-[#4b2a9d]",
+    blue: "bg-gradient-to-br from-[#1d5c8d] to-[#123d6b]",
+    red: "bg-gradient-to-br from-[#cb5b4d] to-[#ad443c]",
+  }[tone];
+
   return (
-    <Card className={cn("hover:shadow-md transition-shadow", className)}>
+    <Card className={cn("border-0 text-white shadow-sm hover:shadow-md transition-shadow", toneClass, className)}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-navy-800 dark:text-navy-300">{title}</p>
-              <p className="mt-2 text-2xl font-bold text-amber-600 dark:text-amber-300">{value}</p>
+            <p className="text-sm font-medium text-white/85">{title}</p>
+              <p className="mt-2 text-2xl font-bold text-white">{value}</p>
             {description && (
-              <p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">{description}</p>
+              <p className="mt-0.5 text-xs text-white/70">{description}</p>
             )}
             {trend && (
               <p
                 className={cn(
                   "mt-1 text-xs font-medium",
-                  trendUp ? "text-emerald-600" : "text-red-600"
+                  trendUp ? "text-emerald-200" : "text-red-200"
                 )}
               >
                 {trend}
@@ -47,11 +57,11 @@ export function StatCard({
           </div>
           <div
             className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-xl bg-navy-100 dark:bg-navy-900/70",
+              "flex h-12 w-12 items-center justify-center rounded-xl bg-black/15",
               iconClassName
             )}
           >
-            <Icon className="h-6 w-6 text-navy-700 dark:text-navy-300" />
+            <Icon className="h-6 w-6 text-white" />
           </div>
         </div>
       </CardContent>
