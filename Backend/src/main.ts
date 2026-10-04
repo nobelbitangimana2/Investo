@@ -11,8 +11,8 @@ async function bootstrap() {
   // ── CORS ──────────────────────────────────────────────────────────
     const allowedOrigins = [
     process.env.FRONTEND_URL,
-    'https://investo.fund',
-    'https://www.investo.fund',
+    'http://investo.fund',
+    'http://www.investo.fund',
   ].filter(Boolean);
 
   app.enableCors({
