@@ -9,8 +9,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ── CORS ──────────────────────────────────────────────────────────
+    const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'https://investo.fund',
+    'https://www.investo.fund',
+  ].filter(Boolean);
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL ?? '*',
+    origin: allowedOrigins,
     credentials: true,
   });
 
