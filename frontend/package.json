@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "cd /home/investo/domains/investo.fund/Investo/frontend && next build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
@@ -35,5 +36,4 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0"
   }
-  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "lint": "next lint", "postinstall": "next build" }
 }
