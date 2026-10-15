@@ -9,10 +9,13 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // ── CORS ──────────────────────────────────────────────────────────
-    const allowedOrigins = [
+  const allowedOrigins = [
     process.env.FRONTEND_URL,
+    'https://investo.fund',
+    'https://www.investo.fund',
     'http://investo.fund',
     'http://www.investo.fund',
+    'https://investo-beta.vercel.app',
   ].filter(Boolean);
 
   app.enableCors({
