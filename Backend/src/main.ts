@@ -16,6 +16,7 @@ async function bootstrap() {
     'http://investo.fund',
     'http://www.investo.fund',
     'https://investo-beta.vercel.app',
+    'https://api.investo.fund',
   ].filter(Boolean);
 
   app.enableCors({
