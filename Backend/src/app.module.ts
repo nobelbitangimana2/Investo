@@ -15,6 +15,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
 import { ReportsModule } from './reports/reports.module';
 import { PartnerBanksModule } from './partner-banks/partner-banks.module';
+import { SeedOnceModule } from './seed-once/seed-once.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -42,6 +43,7 @@ import { HealthController } from './health/health.controller';
     AuditLogsModule,
     ReportsModule,
     PartnerBanksModule,
+    SeedOnceModule,
   ],
   controllers: [HealthController],
 })
