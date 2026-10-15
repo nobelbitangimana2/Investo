@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "cd /home/investo/domains/investo.fund/Investo/frontend && next build"
+    "postinstall": "if [ -d /home/investo/domains/investo.fund/Investo/frontend ]; then cd /home/investo/domains/investo.fund/Investo/frontend && next build; fi"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
