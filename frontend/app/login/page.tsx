@@ -17,6 +17,7 @@ import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
+  const tc = useTranslations("common");
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -147,7 +148,7 @@ export default function LoginPage() {
                   disabled={resending}
                   className="text-xs font-semibold text-amber-800 underline hover:text-amber-900 disabled:opacity-50"
                 >
-                  {resending ? t("sending", { ns: "common" }) : t("resendVerification")}
+                  {resending ? tc("sending") : t("resendVerification")}
                 </button>
               </div>
             )}
@@ -194,7 +195,7 @@ export default function LoginPage() {
                     onClick={() => { setShowForgotPassword(false); setForgotEmail(""); }}
                     className="flex-1 rounded-lg border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-50"
                   >
-                    {t("cancel", { ns: "common" })}
+                    {tc("cancel")}
                   </button>
                   <button
                     type="button"
