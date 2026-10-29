@@ -1,18 +1,80 @@
-import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  InternalServerErrorException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
+type Provider = 'smtp' | 'resend';
+
+/**
+ * Sends transactional emails.
+ *
+ * Provider is chosen with the MAIL_PROVIDER environment variable:
+ *   - "resend" (default)  -> Resend API, uses RESEND_API_KEY and EMAIL_FROM
+ *   - "smtp"              -> your own mail server through Nodemailer, uses
+ *                            SMTP_HOST, SMTP_PORT (default 587), SMTP_USER,
+ *                            SMTP_PASS and optionally SMTP_FROM
+ *
+ * To go back to Resend at any time, set MAIL_PROVIDER=resend (or remove it)
+ * and restart the app.
+ */
 @Injectable()
-export class MailService {
-  private readonly resend: Resend;
+export class MailService implements OnModuleInit {
+  private readonly provider: Provider;
+  private readonly resend?: Resend;
+  private readonly transporter?: nodemailer.Transporter;
   private readonly from: string;
   private readonly appUrl: string;
   private readonly logger = new Logger(MailService.name);
 
   constructor(private readonly config: ConfigService) {
-    this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
-    this.from = config.get<string>('EMAIL_FROM') ?? 'Investo <noreply@investo.bi>';
     this.appUrl = (config.get<string>('NEXT_PUBLIC_APP_URL') ?? 'http://localhost:3000').trim();
+
+    const requested = (config.get<string>('MAIL_PROVIDER') ?? 'resend').trim().toLowerCase();
+    this.provider = requested === 'smtp' ? 'smtp' : 'resend';
+
+    if (this.provider === 'smtp') {
+      const host = config.get<string>('SMTP_HOST');
+      const port = parseInt(config.get<string>('SMTP_PORT') ?? '587', 10);
+      const user = config.get<string>('SMTP_USER');
+      const pass = config.get<string>('SMTP_PASS');
+
+      this.transporter = nodemailer.createTransport({
+        host,
+        port,
+        // Port 465 = implicit TLS. Port 587 = STARTTLS (upgrade to TLS is required).
+        secure: port === 465,
+        requireTLS: port !== 465,
+        auth: user && pass ? { user, pass } : undefined,
+        connectionTimeout: 10_000,
+        greetingTimeout: 10_000,
+        socketTimeout: 20_000,
+      });
+
+      // The "from" address should match the mailbox used to log in.
+      this.from = config.get<string>('SMTP_FROM') ?? `Investo <${user}>`;
+    } else {
+      this.resend = new Resend(config.get<string>('RESEND_API_KEY'));
+      this.from = config.get<string>('EMAIL_FROM') ?? 'Investo <noreply@investo.bi>';
+    }
+  }
+
+  // Check the SMTP connection when the app starts (does not block startup).
+  onModuleInit(): void {
+    if (this.provider === 'smtp' && this.transporter) {
+      this.transporter
+        .verify()
+        .then(() => this.logger.log('Mail provider: SMTP (connection verified)'))
+        .catch((err: Error) =>
+          this.logger.warn(`Mail provider: SMTP, but the connection check failed: ${err.message}`),
+        );
+    } else {
+      this.logger.log('Mail provider: Resend');
+    }
   }
 
   // ── Send verification email ────────────────────────────────────────
@@ -22,23 +84,53 @@ export class MailService {
     token: string,
   ): Promise<void> {
     const verifyUrl = `${this.appUrl}/verify-email?token=${token}`;
+    const subject = 'Verify your Investo account';
 
     const html = this.buildVerificationHtml(name, verifyUrl);
+    const text = this.buildVerificationText(name, verifyUrl);
 
     try {
-      await this.resend.emails.send({
-        from: this.from,
-        to,
-        subject: 'Verify your Investo account',
-        html,
-      });
-      this.logger.log(`Verification email sent to ${to}`);
+      if (this.provider === 'smtp') {
+        await this.transporter!.sendMail({
+          from: this.from,
+          to,
+          subject,
+          html,
+          text,
+        });
+      } else {
+        await this.resend!.emails.send({
+          from: this.from,
+          to,
+          subject,
+          html,
+          text,
+        });
+      }
+      this.logger.log(`Verification email sent to ${to} (${this.provider})`);
     } catch (err) {
-      this.logger.error(`Failed to send verification email to ${to}`, err);
+      this.logger.error(`Failed to send verification email to ${to} (${this.provider})`, err);
       throw new InternalServerErrorException(
         'Failed to send verification email. Please try again later.',
       );
     }
+  }
+
+  // ── Plain-text version (improves deliverability) ───────────────────
+  private buildVerificationText(name: string, verifyUrl: string): string {
+    return [
+      `Welcome to Investo, ${name}!`,
+      '',
+      'Thank you for creating your account. To start managing your investments,',
+      'please verify your email address by opening this link:',
+      '',
+      verifyUrl,
+      '',
+      'This link expires in 24 hours. If it expires, you can request a new',
+      'verification email from the login page.',
+      '',
+      "If you didn't create an Investo account, you can safely ignore this email.",
+    ].join('\n');
   }
 
   // ── HTML email template ────────────────────────────────────────────
