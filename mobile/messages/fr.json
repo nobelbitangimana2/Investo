@@ -98,7 +98,8 @@
     "interestRates": "Taux d'intérêt",
     "auditLogs": "Journaux d'audit",
     "newDeposit": "Nouveau dépôt",
-    "newWithdrawal": "Nouveau retrait"
+    "newWithdrawal": "Nouveau retrait",
+    "partnerBanks": "Banques partenaires"
   },
 
   "topbar": {
@@ -290,7 +291,7 @@
       "form": {
         "title": "Demande de retrait",
         "subtitle": "Demandez un virement depuis votre compte d'investissement",
-        "processingNotice": "Les demandes de retrait sont examinées par notre équipe avant le virement des fonds. Le traitement peut prendre 1 à 3 jours ouvrables.",
+        "processingNotice": "Les demandes de retrait sont examinées par notre équipe avant le virement des fonds. Le traitement prend jusqu'à 24 heures.",
         "availableBalance": "Votre solde disponible",
         "totalBalance": "Solde total",
         "maxWithdrawable": "Montant max retirable",
@@ -510,19 +511,22 @@
     "interestRates": {
       "title": "Taux d'intérêt",
       "subtitle": "Gérer les taux d'intérêt par période d'investissement",
-      "addUpdate": "Ajouter / Mettre à jour un taux",
+      "addRate": "Ajouter un taux",
       "colPeriod": "Période",
       "colRate": "Taux (%)",
       "colLastUpdated": "Dernière mise à jour",
       "colActions": "Actions",
       "editTitle": "Modifier le taux — {period}",
-      "addTitle": "Ajouter / Mettre à jour un taux",
+      "addTitle": "Ajouter un nouveau taux",
       "investmentPeriod": "Période d'investissement",
-      "periodPlaceholder": "Sélectionner une période",
+      "periodTypePlaceholder": "ex. 3 Mois ou 2 Ans",
       "rateLabel": "Taux d'intérêt (%)",
       "ratePlaceholder": "ex. 20",
       "saveRate": "Enregistrer le taux",
-      "rateUpdated": "Le taux d'intérêt pour \"{period}\" a été mis à jour à {rate}%."
+      "rateUpdated": "Le taux d'intérêt pour \"{period}\" a été mis à jour à {rate}%.",
+      "rateDeleted": "Le taux pour \"{period}\" a été supprimé.",
+      "deleteConfirmTitle": "Supprimer le taux",
+      "deleteConfirmMessage": "Voulez-vous vraiment supprimer le taux pour \"{period}\" ?"
     },
 
     "reports": {
@@ -677,6 +681,14 @@
     "rejectionNoteRequired": "Veuillez fournir un motif de rejet (au moins 10 caractères).",
     "confirmButton": "Confirmer",
     "rejectButton": "Rejeter"
+  },
+
+  "partnerBanksPage": {
+    "title": "Nos banques partenaires",
+    "subtitle": "Déposez votre argent dans l'une de ces banques et utilisez les coordonnées affichées",
+    "accountName": "Nom du compte",
+    "accountNumber": "Numéro de compte",
+    "noBanks": "Aucune banque partenaire n'a encore été configurée."
   },
 
   "landing": {

@@ -344,15 +344,20 @@ export async function getInterestRates(): Promise<InterestRate[]> {
 }
 
 export async function upsertInterestRateApi(period: string, ratePercentage: number): Promise<InterestRate> {
+  // Period is now free-text — send as-is, no enum conversion
   const res = await apiPost<Record<string, unknown>>('/interest-rates', {
-    investmentPeriod: periodToEnum(period), ratePercentage,
+    investmentPeriod: period.trim(), ratePercentage,
   });
   return {
     id: res.id as string,
-    investmentPeriod: normPeriod(res.investmentPeriod as string),
+    investmentPeriod: res.investmentPeriod as string,
     ratePercentage: toNumber(res.ratePercentage),
     dateUpdated: (res.updatedAt ?? res.dateUpdated) as string,
   };
+}
+
+export async function deleteInterestRateApi(period: string): Promise<void> {
+  await apiFetch(`/interest-rates/${encodeURIComponent(period)}`, { method: 'DELETE' });
 }
 
 // ── Notifications ──────────────────────────────────────────────────────────
