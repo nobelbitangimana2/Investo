@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 
 export const API_BASE: string =
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
-  'https://investobacken.onrender.com/api';
+  'http://investo.fund:3001/api';
 
 // Fallback bank list used only when the partner-banks API hasn't responded yet
 export const FALLBACK_BANKS = ['Bancobu', 'BCB', 'KCB', 'Ecobank', 'Lumicash', 'Ecocash'] as const;

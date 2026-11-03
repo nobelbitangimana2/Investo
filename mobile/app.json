@@ -57,7 +57,7 @@
     ],
     "scheme": "investo",
     "extra": {
-      "apiUrl": "https://investobacken.onrender.com/api",
+      "apiUrl": "http://investo.fund:3001/api",
       "eas": {
         "projectId": "d57f5524-c14f-4ba4-a323-cad86601eff9"
       },
