@@ -24,21 +24,39 @@ function tokenKey(suffix: "access" | "refresh") {
 }
 
 // ── Token helpers ──────────────────────────────────────────────────────────
+const ALL_ROLES = ["admin", "accountant", "client"];
+
 export function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
-  // Try role-scoped key first, fall back to legacy key
-  return (
-    localStorage.getItem(tokenKey("access")) ??
-    localStorage.getItem("investo-access-token")
-  );
+  // 1. Try the currently active role-scoped key
+  if (_activeRole) {
+    const v = localStorage.getItem(`investo-access-token:${_activeRole}`);
+    if (v) return v;
+  }
+  // 2. Try all known role keys (handles page reload before rehydration)
+  for (const role of ALL_ROLES) {
+    const v = localStorage.getItem(`investo-access-token:${role}`);
+    if (v) {
+      // Also restore the active role so subsequent calls are fast
+      _activeRole = role;
+      return v;
+    }
+  }
+  // 3. Fall back to legacy key
+  return localStorage.getItem("investo-access-token");
 }
 
 export function getRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
-  return (
-    localStorage.getItem(tokenKey("refresh")) ??
-    localStorage.getItem("investo-refresh-token")
-  );
+  if (_activeRole) {
+    const v = localStorage.getItem(`investo-refresh-token:${_activeRole}`);
+    if (v) return v;
+  }
+  for (const role of ALL_ROLES) {
+    const v = localStorage.getItem(`investo-refresh-token:${role}`);
+    if (v) return v;
+  }
+  return localStorage.getItem("investo-refresh-token");
 }
 
 export function setTokens(accessToken: string, refreshToken: string) {
