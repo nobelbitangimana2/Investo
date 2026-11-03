@@ -253,27 +253,33 @@ export class AuthService {
 
     // Convert string durations to seconds for @nestjs/jwt v11 compatibility
     const toSeconds = (val: string): number => {
-      const num = parseInt(val, 10);
-      if (!isNaN(num)) return num;
       if (val.endsWith('m')) return parseInt(val) * 60;
       if (val.endsWith('h')) return parseInt(val) * 3600;
       if (val.endsWith('d')) return parseInt(val) * 86400;
-      return 900;
+      if (val.endsWith('s')) return parseInt(val);
+      const num = parseInt(val, 10);
+      if (!isNaN(num)) return num; // plain number = already seconds
+      return 900; // fallback: 15 minutes
+    };const multipliers: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400 };
+      const unit = (match[2] || 's').toLowerCase();
+      return parseInt(match[1], 10) * multipliers[unit];
     };
+
+    const accessSeconds = toSeconds(accessExpiry, 900); // default 15 min
+    const refreshSeconds = toSeconds(refreshExpiry, 604800); // default 7 days
 
     const [accessToken, refreshToken] = await Promise.all([
       this.jwt.signAsync(payload, {
         secret: this.config.get<string>('JWT_ACCESS_SECRET'),
-        expiresIn: toSeconds(accessExpiry),
+        expiresIn: accessSeconds,
       }),
       this.jwt.signAsync(payload, {
         secret: this.config.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: toSeconds(refreshExpiry),
+        expiresIn: refreshSeconds,
       }),
     ]);
 
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const expiresAt = new Date(Date.now() + refreshSeconds * 1000);
 
     await this.prisma.refreshToken.create({
       data: { token: refreshToken, userId, expiresAt },
